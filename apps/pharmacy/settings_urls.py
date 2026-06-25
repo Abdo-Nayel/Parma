@@ -1,13 +1,14 @@
 from django.urls import path
+from django.views.generic import RedirectView
 from . import settings_views
 
 urlpatterns = [
     path('', settings_views.settings_home, name='settings_home'),
     path('pharmacy/', settings_views.pharmacy_profile_form, name='pharmacy_profile'),
-    path('branches/', settings_views.branch_list, name='branch_list'),
-    path('branches/add/', settings_views.branch_form, name='branch_add'),
-    path('branches/<int:pk>/edit/', settings_views.branch_form, name='branch_edit'),
-    path('branches/<int:pk>/delete/', settings_views.branch_delete, name='branch_delete'),
+    path('branches/', RedirectView.as_view(pattern_name='settings_home', permanent=False)),
+    path('branches/add/', RedirectView.as_view(pattern_name='settings_home', permanent=False)),
+    path('branches/<int:pk>/edit/', RedirectView.as_view(pattern_name='settings_home', permanent=False)),
+    path('branches/<int:pk>/delete/', RedirectView.as_view(pattern_name='settings_home', permanent=False)),
     path('banks/', settings_views.bank_list, name='bank_list'),
     path('banks/add/', settings_views.bank_form, name='bank_add'),
     path('banks/<int:pk>/edit/', settings_views.bank_form, name='bank_edit'),
