@@ -1,0 +1,35 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+<div class="settings-grid">
+  <a href="{% url 'pharmacy_profile' %}" class="settings-card">
+    <i class="fas fa-store"></i>
+    <h3>بيانات الصيدلية</h3>
+    <p>الاسم والعنوان والشعار</p>
+  </a>
+  <a href="{% url 'branch_list' %}" class="settings-card">
+    <i class="fas fa-code-branch"></i>
+    <h3>الفروع</h3>
+    <p>أكواد الفروع وربط المستخدمين</p>
+  </a>
+  <a href="{% url 'bank_list' %}" class="settings-card">
+    <i class="fas fa-university"></i>
+    <h3>البنوك</h3>
+    <p>حسابات بنكية وأكوادها</p>
+  </a>
+  <a href="{% url 'user_list' %}" class="settings-card">
+    <i class="fas fa-users-cog"></i>
+    <h3>المستخدمون والصلاحيات</h3>
+    <p>أكواد المستخدمين والوصول لكل شاشة</p>
+  </a>
+  <a href="{% url 'barcode_settings' %}" class="settings-card">
+    <i class="fas fa-barcode"></i>
+    <h3>ليبل الباركود</h3>
+    <p>تصميم وطباعة ملصقات الأصناف</p>
+  </a>
+  <a href="{% url 'receipt_settings' %}" class="settings-card">
+    <i class="fas fa-receipt"></i>
+    <h3>إيصال البيع</h3>
+    <p>هيدر وفوتر ولوجو — Xprinter</p>
+  </a>
+</div>
+{% endblock %}

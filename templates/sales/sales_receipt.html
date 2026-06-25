@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}إيصال {{ obj.invoice_number }}{% endblock %}
+{% block extra_css %}
+<style>
+  @page { size: {{ receipt.paper_width_mm }}mm auto; margin: 2mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Cairo', Tahoma, sans-serif;
+    background: #f1f5f9;
+    color: #0f172a;
+    direction: rtl;
+  }
+  .no-print {
+    text-align: center;
+    padding: 1rem;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .receipt {
+    width: {{ receipt.paper_width_mm }}mm;
+    max-width: 100%;
+    margin: 0 auto;
+    background: #fff;
+    padding: 4mm 3mm;
+    font-size: {{ receipt.body_font_size }}px;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+  .receipt-logo {
+    text-align: center;
+    margin-bottom: 3mm;
+  }
+  .receipt-logo img {
+    max-width: 22mm;
+    max-height: 18mm;
+    object-fit: contain;
+  }
+  .receipt-title {
+    text-align: center;
+    font-size: {{ receipt.title_font_size }}px;
+    font-weight: 800;
+    margin-bottom: 2mm;
+    letter-spacing: 0.3px;
+  }
+  .receipt-sub {
+    text-align: center;
+    font-size: {{ receipt.body_font_size|add:"-1" }}px;
+    color: #334155;
+    margin-bottom: 3mm;
+    white-space: pre-line;
+  }
+  .divider {
+    border-top: 2px dashed #0f172a;
+    margin: 3mm 0;
+  }
+  .divider-thin {
+    border-top: 1px dashed #94a3b8;
+    margin: 2mm 0;
+  }
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 2mm;
+    margin-bottom: 1.5mm;
+    font-weight: 800;
+  }
+  .items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2mm 0;
+    font-weight: 800;
+  }
+  .items-table th {
+    text-align: right;
+    font-size: {{ receipt.body_font_size|add:"-1" }}px;
+    border-bottom: 2px solid #0f172a;
+    padding: 1.5mm 0;
+  }
+  .items-table td {
+    padding: 1.5mm 0;
+    vertical-align: top;
+    border-bottom: 1px dotted #cbd5e1;
+  }
+  .item-name { font-weight: 800; }
+  .item-sub { font-size: {{ receipt.body_font_size|add:"-2" }}px; color: #475569; font-weight: 700; }
+  .totals .row {
+    display: flex;
+    justify-content: space-between;
+    margin: 1.5mm 0;
+    font-weight: 800;
+  }
+  .totals .grand {
+    font-size: {{ receipt.title_font_size|add:"-1" }}px;
+    font-weight: 800;
+    border-top: 2px solid #0f172a;
+    padding-top: 2mm;
+    margin-top: 2mm;
+  }
+  .footer-text {
+    text-align: center;
+    margin-top: 4mm;
+    font-size: {{ receipt.body_font_size }}px;
+    font-weight: 800;
+    white-space: pre-line;
+  }
+  .pharmacy-info {
+    text-align: center;
+    font-size: {{ receipt.body_font_size|add:"-1" }}px;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 2mm;
+  }
+  @media print {
+    body { background: #fff; }
+    .no-print { display: none !important; }
+    .receipt { box-shadow: none; }
+  }
+</style>
+{% endblock %}
+{% block body %}
+<div class="no-print">
+  <button onclick="window.print()" class="btn-print"><i class="fas fa-print"></i> طباعة — Xprinter</button>
+  <a href="{% url 'sales_list' %}" style="margin-right:1rem">رجوع للقائمة</a>
+</div>
+
+<div class="receipt">
+  {% if logo_url %}
+  <div class="receipt-logo"><img src="{{ logo_url }}" alt="logo"></div>
+  {% endif %}
+
+  <div class="receipt-title">{% if profile %}{{ profile.name }}{% else %}LyomasPharmacy{% endif %}</div>
+  {% if profile and profile.address %}<div class="pharmacy-info">{{ profile.address }}{% if profile.phone %} — {{ profile.phone }}{% endif %}</div>{% endif %}
+
+  {% if receipt.header_text %}<div class="receipt-sub">{{ receipt.header_text }}</div>{% endif %}
+
+  <div class="divider"></div>
+
+  <div class="meta-row"><span>فاتورة #{{ obj.invoice_number }}</span><span>{{ obj.date }}</span></div>
+  <div class="meta-row"><span>{{ obj.get_payment_type_display }}</span><span>{{ obj.currency }}</span></div>
+  {% if receipt.show_customer %}
+  <div class="meta-row"><span>العميل</span><span>{{ obj.buyer_display }}</span></div>
+  {% endif %}
+  {% if receipt.show_cashier and obj.created_by %}
+  <div class="meta-row"><span>الكاشير</span><span>{{ obj.created_by.get_full_name|default:obj.created_by.username }}</span></div>
+  {% endif %}
+
+  <div class="divider-thin"></div>
+
+  <table class="items-table">
+    <thead><tr><th>الصنف</th><th>ك</th><th>سعر</th><th>إجمالي</th></tr></thead>
+    <tbody>
+      {% for line in lines %}
+      <tr>
+        <td>
+          <div class="item-name">{{ line.product.name }}</div>
+          <div class="item-sub">{{ line.product.sku }}</div>
+        </td>
+        <td>{{ line.quantity }}</td>
+        <td>{{ line.unit_price }}</td>
+        <td>{{ line.line_total }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="divider-thin"></div>
+
+  <div class="totals">
+    <div class="row"><span>المجموع</span><span>{{ obj.subtotal }}</span></div>
+    {% if receipt.show_discount and obj.discount %}<div class="row"><span>خصم</span><span>{{ obj.discount }}</span></div>{% endif %}
+    <div class="row grand"><span>الإجمالي</span><span>{{ obj.grand_total }} {{ obj.currency }}</span></div>
+    {% if paid %}<div class="row"><span>المدفوع</span><span>{{ paid }}</span></div>{% endif %}
+    {% if change %}<div class="row"><span>الباقي</span><span>{{ change }}</span></div>{% endif %}
+    {% if obj.payment_type == 'credit' and remaining > 0 %}
+    <div class="row"><span>المتبقي على العميل</span><span>{{ remaining }}</span></div>
+    {% endif %}
+  </div>
+
+  {% if receipt.footer_text %}
+  <div class="footer-text">{{ receipt.footer_text }}</div>
+  {% endif %}
+</div>
+
+<script>
+window.addEventListener('load', function() {
+  if (new URLSearchParams(location.search).get('auto') === '1') {
+    setTimeout(function() { window.print(); }, 400);
+  }
+});
+</script>
+<style>
+.btn-print {
+  background: linear-gradient(135deg, #7c3aed, #0ea5e9);
+  color: #fff;
+  border: none;
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  font-family: 'Cairo', sans-serif;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 1rem;
+}
+</style>
+{% endblock %}

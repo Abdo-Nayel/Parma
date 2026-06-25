@@ -1,0 +1,135 @@
+{% load static %}
+{% load access_tags %}
+<nav class="sidebar" id="app-sidebar">
+  <div class="sidebar-brand">
+    <img src="{% static 'img/LyomasTech_Logo2.png' %}" alt="LyomasTech">
+    <h1>LyomasPharmacy</h1>
+    <p>{% if pharmacy %}{{ pharmacy.name }}{% else %}نظام محاسبة الصيدلية{% endif %}</p>
+  </div>
+  <div class="sidebar-user">
+    <i class="fas fa-user-circle"></i> {{ user.username }}
+  </div>
+
+  <a href="{% url 'dashboard' %}" class="nav-link nav-link-top {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+    <i class="fas fa-chart-pie"></i> لوحة التحكم
+  </a>
+
+  <div class="nav-group" data-nav-group="inventory">
+    <button type="button" class="nav-group-toggle" aria-expanded="false">
+      <span class="nav-group-label"><i class="fas fa-boxes"></i> المخزون</span>
+      <i class="fas fa-chevron-down nav-chevron"></i>
+    </button>
+    <div class="nav-group-items">
+      <a href="{% url 'warehouse_list' %}" class="nav-link" data-path="/inventory/warehouses"><i class="fas fa-warehouse"></i> المخازن</a>
+      <a href="{% url 'category_list' %}" class="nav-link" data-path="/inventory/categories"><i class="fas fa-layer-group"></i> الأصناف الرئيسية</a>
+      <a href="{% url 'company_list' %}" class="nav-link" data-path="/inventory/companies"><i class="fas fa-industry"></i> الشركات المنتجة</a>
+      <a href="{% url 'product_list' %}" class="nav-link" data-path="/inventory/products"><i class="fas fa-pills"></i> الأصناف الفرعية</a>
+      <a href="{% url 'opening_stock' %}" class="nav-link" data-path="/inventory/opening-stock"><i class="fas fa-box-open"></i> رصيد افتتاحي</a>
+      <a href="{% url 'stock_report' %}" class="nav-link" data-path="/inventory/stock-report"><i class="fas fa-search"></i> استعلام مخزون</a>
+      <a href="{% url 'expiry_report' %}" class="nav-link" data-path="/inventory/expiry-report"><i class="fas fa-calendar-times"></i> تقرير الصلاحيات</a>
+      <a href="{% url 'stock_valuation' %}" class="nav-link" data-path="/inventory/stock-valuation"><i class="fas fa-coins"></i> تقييم المخزون</a>
+    </div>
+  </div>
+
+  <div class="nav-group" data-nav-group="parties">
+    <button type="button" class="nav-group-toggle" aria-expanded="false">
+      <span class="nav-group-label"><i class="fas fa-handshake"></i> الأطراف</span>
+      <i class="fas fa-chevron-down nav-chevron"></i>
+    </button>
+    <div class="nav-group-items">
+      <a href="{% url 'supplier_list' %}" class="nav-link" data-path="/parties/suppliers"><i class="fas fa-truck"></i> الموردين</a>
+      <a href="{% url 'supplier_balances' %}" class="nav-link" data-path="/parties/suppliers/balances"><i class="fas fa-file-invoice-dollar"></i> أرصدة الموردين</a>
+      <a href="{% url 'supplier_statement' %}" class="nav-link" data-path="/parties/suppliers/statement"><i class="fas fa-receipt"></i> كشف حساب مورد</a>
+      <a href="{% url 'supplier_payment' %}" class="nav-link" data-path="/parties/suppliers/payment"><i class="fas fa-money-bill-wave"></i> سداد مورد</a>
+      <a href="{% url 'customer_list' %}" class="nav-link" data-path="/parties/customers"><i class="fas fa-users"></i> العملاء</a>
+      <a href="{% url 'customer_balances' %}" class="nav-link" data-path="/parties/customers/balances"><i class="fas fa-file-invoice-dollar"></i> أرصدة العملاء</a>
+      <a href="{% url 'customer_statement' %}" class="nav-link" data-path="/parties/customers/statement"><i class="fas fa-receipt"></i> كشف حساب عميل</a>
+      <a href="{% url 'customer_payment' %}" class="nav-link" data-path="/parties/customers/payment"><i class="fas fa-hand-holding-usd"></i> تحصيل عميل</a>
+    </div>
+  </div>
+
+  <div class="nav-group" data-nav-group="operations">
+    <button type="button" class="nav-group-toggle" aria-expanded="false">
+      <span class="nav-group-label"><i class="fas fa-briefcase"></i> العمليات</span>
+      <i class="fas fa-chevron-down nav-chevron"></i>
+    </button>
+    <div class="nav-group-items">
+      <a href="{% url 'purchase_list' %}" class="nav-link" data-path="/purchases"><i class="fas fa-cart-shopping"></i> المشتريات</a>
+      <a href="{% url 'sales_list' %}" class="nav-link" data-path="/sales"><i class="fas fa-cash-register"></i> المبيعات</a>
+      <a href="{% url 'sales_items_report' %}" class="nav-link" data-path="/sales/reports/items"><i class="fas fa-list-alt"></i> تقرير مبيعات بالأصناف</a>
+      <a href="{% url 'sales_profit_report' %}" class="nav-link" data-path="/sales/reports/profit"><i class="fas fa-chart-line"></i> تقرير الأرباح</a>
+      <a href="{% url 'expense_list' %}" class="nav-link" data-path="/treasury/expenses"><i class="fas fa-money-bill-wave"></i> المصروفات</a>
+      <a href="{% url 'cash_ledger' %}" class="nav-link" data-path="/treasury/cash-ledger"><i class="fas fa-cash-register"></i> كشف الخزنة النقدية</a>
+      <a href="{% url 'bank_ledger' %}" class="nav-link" data-path="/treasury/bank-ledger"><i class="fas fa-university"></i> كشف البنوك</a>
+    </div>
+  </div>
+
+  {% can_access 'settings' 'view' as can_settings %}
+  {% if can_settings %}
+  <div class="nav-group" data-nav-group="system">
+    <button type="button" class="nav-group-toggle" aria-expanded="false">
+      <span class="nav-group-label"><i class="fas fa-cog"></i> النظام</span>
+      <i class="fas fa-chevron-down nav-chevron"></i>
+    </button>
+    <div class="nav-group-items">
+      <a href="{% url 'settings_home' %}" class="nav-link" data-path="/settings"><i class="fas fa-sliders-h"></i> الإعدادات</a>
+      <a href="{% url 'branch_list' %}" class="nav-link" data-path="/settings/branches"><i class="fas fa-code-branch"></i> الفروع</a>
+      <a href="{% url 'bank_list' %}" class="nav-link" data-path="/settings/banks"><i class="fas fa-university"></i> البنوك</a>
+      <a href="{% url 'user_list' %}" class="nav-link" data-path="/settings/users"><i class="fas fa-user-cog"></i> المستخدمون</a>
+      <a href="{% url 'barcode_settings' %}" class="nav-link" data-path="/settings/barcode"><i class="fas fa-barcode"></i> ليبل الباركود</a>
+      <a href="{% url 'receipt_settings' %}" class="nav-link" data-path="/settings/receipt"><i class="fas fa-receipt"></i> إيصال البيع</a>
+      <a href="{% url 'pharmacy_profile' %}" class="nav-link" data-path="/settings/pharmacy"><i class="fas fa-store"></i> بيانات الصيدلية</a>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="sidebar-footer">
+    <a href="{% url 'logout' %}" class="nav-link nav-link-logout">
+      <i class="fas fa-sign-out-alt"></i> خروج
+    </a>
+  </div>
+</nav>
+<script>
+(function() {
+  const path = window.location.pathname;
+  const groups = document.querySelectorAll('#app-sidebar .nav-group');
+
+  function linkMatches(link) {
+    const prefix = link.dataset.path;
+    if (!prefix) return link.pathname === path;
+    return path === prefix || path.startsWith(prefix + '/');
+  }
+
+  let activeLink = null;
+  let activeLen = 0;
+  document.querySelectorAll('#app-sidebar .nav-link[data-path]').forEach(link => {
+    if (linkMatches(link) && link.dataset.path.length > activeLen) {
+      activeLink = link;
+      activeLen = link.dataset.path.length;
+    }
+  });
+  if (activeLink) {
+    activeLink.classList.add('active');
+    activeLink.closest('.nav-group')?.classList.add('open');
+  }
+
+  groups.forEach(group => {
+    const toggle = group.querySelector('.nav-group-toggle');
+    const id = group.dataset.navGroup;
+    const saved = sessionStorage.getItem('nav-open-' + id);
+
+    if (group.classList.contains('open')) {
+      toggle.setAttribute('aria-expanded', 'true');
+    } else if (saved === '1') {
+      group.classList.add('open');
+      toggle.setAttribute('aria-expanded', 'true');
+    }
+
+    toggle.addEventListener('click', () => {
+      const isOpen = group.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      sessionStorage.setItem('nav-open-' + id, isOpen ? '1' : '0');
+    });
+  });
+})();
+</script>

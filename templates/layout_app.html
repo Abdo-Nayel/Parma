@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body %}
+<div class="app-layout">
+  {% include 'partials/sidebar.html' %}
+  <main class="main-content">
+    <div class="topbar">
+      <h2>{{ page_title }}</h2>
+      <div class="topbar-actions">
+        <a href="{% url 'logout' %}" class="btn-logout"><i class="fas fa-sign-out-alt"></i> خروج</a>
+      </div>
+    </div>
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="alert alert-{% if msg.tags == 'error' %}error{% elif msg.tags == 'warning' %}warning{% else %}success{% endif %}">
+          {{ msg }}
+        </div>
+      {% endfor %}
+    {% endif %}
+    {% block page_content %}{% endblock %}
+  </main>
+</div>
+{% endblock %}

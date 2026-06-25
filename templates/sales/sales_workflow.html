@@ -1,0 +1,161 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+
+<div class="panel invoice-locked">
+  <div class="panel-header" style="background:linear-gradient(135deg,#7c3aed,#0ea5e9);color:#fff">
+    <h3><i class="fas fa-receipt"></i> {{ obj.invoice_number }} — POS</h3>
+    <span class="badge" style="background:rgba(255,255,255,0.2)">{{ obj.get_payment_type_display }} | {{ obj.get_status_display }}</span>
+  </div>
+  <div class="panel-body">
+    <div class="locked-info-grid">
+      <div><span class="lbl">المخزن</span><strong>{{ obj.warehouse.code }} — {{ obj.warehouse.name }}</strong></div>
+      <div><span class="lbl">العميل</span><strong>{{ obj.buyer_display }}</strong></div>
+      <div><span class="lbl">التاريخ</span><strong>{{ obj.date }}</strong></div>
+      <div><span class="lbl">الإجمالي</span><strong style="font-size:1.2rem;color:#7c3aed">{{ obj.grand_total }} {{ obj.currency }}</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- POS: سكان وإضافة -->
+<div class="panel">
+  <div class="panel-header"><h3><i class="fas fa-barcode"></i> إضافة صنف</h3></div>
+  <div class="panel-body">
+    <div class="pos-scan-row">
+      <input type="text" id="product-search" class="form-control" placeholder="باركود / كود / اسم — Enter" autofocus>
+      <button type="button" class="btn btn-primary" onclick="lookupProduct()"><i class="fas fa-search"></i></button>
+    </div>
+    <div id="product-picked" class="pos-picked" style="display:none">
+      <strong id="picked-name"></strong> <small id="picked-sku"></small>
+    </div>
+    <form method="post" id="line-form">{% csrf_token %}
+      <input type="hidden" name="product_id" id="product-id">
+      <div class="form-grid" id="line-fields" style="display:none">
+        <div class="form-group"><label>الكمية</label><input name="quantity" type="number" step="0.01" class="form-control" value="1" required></div>
+        <div class="form-group"><label>سعر البيع</label><input name="unit_price" id="unit-price" type="number" step="0.01" class="form-control" required></div>
+        <div class="form-group"><label>خصم البند</label><input name="line_discount" type="number" step="0.01" class="form-control" value="0"></div>
+      </div>
+      <button type="submit" name="add_line" id="btn-add-line" class="btn btn-success" style="display:none;margin-top:0.5rem">
+        <i class="fas fa-plus"></i> إضافة
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- البنود -->
+<div class="panel">
+  <div class="panel-header">
+    <h3>الأصناف ({{ lines|length }})</h3>
+  </div>
+  <div class="panel-body" style="padding:0">
+    <table class="data-table">
+      <thead><tr><th>#</th><th>الصنف</th><th>كمية</th><th>سعر</th><th>خصم</th><th>إجمالي</th><th></th></tr></thead>
+      <tbody>
+        {% for line in lines %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td><strong>{{ line.product.name }}</strong><br><small>{{ line.product.sku }}</small></td>
+          <td>{{ line.quantity }}</td>
+          <td>{{ line.unit_price }}</td>
+          <td>{{ line.discount }}</td>
+          <td><strong>{{ line.line_total }}</strong></td>
+          <td>
+            <form method="post" style="display:inline">{% csrf_token %}
+              <input type="hidden" name="line_id" value="{{ line.pk }}">
+              <button name="remove_line" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8">امسح باركود أو ابحث لإضافة أصناف</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- إنهاء -->
+<div class="panel">
+  <div class="panel-header"><h3>إنهاء وتحصيل</h3></div>
+  <div class="panel-body">
+    <form method="post">{% csrf_token %}
+      <div class="form-group"><label>خصم إجمالي</label><input name="discount" type="number" step="0.01" class="form-control" value="{{ obj.discount }}" style="max-width:200px"></div>
+      <div class="form-group full"><label>ملاحظات</label><textarea name="notes" class="form-control" rows="2">{{ obj.notes }}</textarea></div>
+
+      <h4 style="margin:1rem 0 0.5rem;font-weight:800">تحصيل {% if obj.payment_type == 'credit' %}(جزئي أو كامل){% else %}(نقدي/بنك){% endif %}</h4>
+      <p style="font-size:0.85rem;color:#64748b">
+        الإجمالي: <strong>{{ obj.grand_total }}</strong> |
+        المحصّل: <strong>{{ paid }}</strong> |
+        المتبقي: <strong id="remain-hint">{{ remaining }}</strong> {{ obj.currency }}
+        {% if obj.payment_type == 'credit' %}<br><small>المتبقي بعد الترحيل يُسجّل على حساب العميل</small>{% endif %}
+      </p>
+      <table class="data-table">
+        <thead><tr><th>نوع</th><th>البنك</th><th>المبلغ</th></tr></thead>
+        <tbody id="payments-body">
+          {% for pay in payments %}<tr>
+            <td><select name="pay_type" class="form-control"><option value="cash" {% if pay.payment_type == 'cash' %}selected{% endif %}>نقدي</option><option value="bank" {% if pay.payment_type == 'bank' %}selected{% endif %}>بنك</option></select></td>
+            <td><select name="pay_bank" class="form-control"><option value="">—</option>{% for b in banks %}<option value="{{ b.pk }}" {% if pay.bank_id == b.pk %}selected{% endif %}>{{ b.code }} — {{ b.name }}</option>{% endfor %}</select></td>
+            <td><input name="pay_amount" type="number" step="0.01" class="form-control" value="{{ pay.amount }}"></td>
+          </tr>{% endfor %}
+          {% if not payments %}<tr>
+            <td><select name="pay_type" class="form-control"><option value="cash">نقدي</option><option value="bank">بنك</option></select></td>
+            <td><select name="pay_bank" class="form-control"><option value="">—</option>{% for b in banks %}<option value="{{ b.pk }}">{{ b.code }} — {{ b.name }}</option>{% endfor %}</select></td>
+            <td><input name="pay_amount" type="number" step="0.01" class="form-control" placeholder="0"></td>
+          </tr>{% endif %}
+        </tbody>
+      </table>
+      <button type="button" class="btn btn-outline btn-sm" onclick="addPayRow()" style="margin:0.5rem 0"><i class="fas fa-plus"></i> تحصيل إضافي</button>
+
+      <div style="display:flex;gap:0.5rem;margin-top:1rem;flex-wrap:wrap">
+        <button name="save_post" class="btn btn-success btn-lg"><i class="fas fa-check-double"></i> حفظ وترحيل</button>
+        <button name="save_draft" class="btn btn-primary"><i class="fas fa-save"></i> مسودة</button>
+        <a href="{% url 'sales_list' %}" class="btn btn-outline">رجوع</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<template id="pay-row"><tr>
+  <td><select name="pay_type" class="form-control"><option value="cash">نقدي</option><option value="bank">بنك</option></select></td>
+  <td><select name="pay_bank" class="form-control"><option value="">—</option>{% for b in banks %}<option value="{{ b.pk }}">{{ b.code }} — {{ b.name }}</option>{% endfor %}</select></td>
+  <td><input name="pay_amount" type="number" step="0.01" class="form-control"></td>
+</tr></template>
+
+<script>
+const LOOKUP = "{% url 'sales_product_lookup' %}";
+
+document.getElementById('product-search')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); lookupProduct(); }
+});
+
+function lookupProduct() {
+  const q = document.getElementById('product-search').value.trim();
+  if (!q) return;
+  fetch(LOOKUP + '?q=' + encodeURIComponent(q)).then(r => r.json()).then(d => {
+    if (!d.found) { alert('الصنف غير موجود'); return; }
+    document.getElementById('product-id').value = d.id;
+    document.getElementById('picked-name').textContent = d.name;
+    document.getElementById('picked-sku').textContent = '(' + d.sku + ')';
+    document.getElementById('product-picked').style.display = 'block';
+    document.getElementById('line-fields').style.display = 'grid';
+    document.getElementById('btn-add-line').style.display = 'inline-flex';
+    document.getElementById('unit-price').value = d.sale_price;
+    document.querySelector('[name=quantity]').focus();
+    document.getElementById('product-search').value = '';
+  });
+}
+
+function addPayRow() {
+  document.getElementById('payments-body').appendChild(
+    document.getElementById('pay-row').content.cloneNode(true).firstElementChild
+  );
+}
+</script>
+
+<style>
+.locked-info-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; }
+.locked-info-grid .lbl { display:block; font-size:0.75rem; color:#64748b; margin-bottom:0.2rem; }
+.pos-scan-row { display:flex; gap:0.5rem; margin-bottom:1rem; }
+.pos-scan-row .form-control { flex:1; font-size:1.1rem; padding:0.75rem; }
+.pos-picked { background:#f5f3ff; border:1px solid #c4b5fd; border-radius:8px; padding:0.75rem; margin-bottom:1rem; }
+</style>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'layout_app.html' %}
+{% load access_tags %}
+{% block page_content %}
+<div class="panel">
+  <div class="panel-header"><h3>المصروفات</h3>{% can_access 'expenses' 'add' as can_add %}{% if can_add %}<a href="{% url 'expense_add' %}" class="btn btn-sm btn-success"><i class="fas fa-plus"></i> تسجيل مصروف</a>{% endif %}</div>
+  <div class="panel-body">
+    <form class="search-bar" method="get"><input name="q" class="form-control" placeholder="بحث بالوصف أو البند..." value="{{ q }}"><button class="btn btn-primary"><i class="fas fa-search"></i></button></form>
+    <table class="data-table">
+      <thead><tr><th>التاريخ</th><th>البند</th><th>البنك</th><th>المبلغ</th><th>الوصف</th><th></th></tr></thead>
+      <tbody>{% for item in items %}<tr>
+        <td>{{ item.date }}</td><td><strong>{{ item.category.name }}</strong></td><td>{{ item.bank|default:"—" }}</td><td>{{ item.amount }}</td><td>{{ item.description }}</td>
+        <td class="row-actions">{% can_access 'expenses' 'edit' as ce %}{% can_access 'expenses' 'delete' as cd %}
+          {% if ce %}<a href="{% url 'expense_edit' item.pk %}" class="btn btn-sm btn-outline"><i class="fas fa-edit"></i></a>{% endif %}
+          {% if cd %}<a href="{% url 'expense_delete' item.pk %}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></a>{% endif %}
+        </td>
+      </tr>{% empty %}<tr><td colspan="6" style="text-align:center;padding:2rem;color:#94a3b8">لا توجد مصروفات</td></tr>{% endfor %}</tbody>
+    </table>
+    {% include 'partials/pagination.html' %}
+  </div>
+</div>
+{% endblock %}

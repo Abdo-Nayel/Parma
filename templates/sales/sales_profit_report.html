@@ -1,0 +1,41 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+<div class="panel">
+  <div class="panel-header"><h3><i class="fas fa-chart-line"></i> تقرير أرباح المبيعات</h3></div>
+  <div class="panel-body">
+    <form class="search-bar" method="get">
+      <input name="date_from" type="date" class="form-control" value="{{ date_from }}" placeholder="من">
+      <input name="date_to" type="date" class="form-control" value="{{ date_to }}" placeholder="إلى">
+      <select name="payment_type" class="form-control">
+        <option value="">كل أنواع الدفع</option>
+        <option value="cash" {% if payment_type == 'cash' %}selected{% endif %}>نقدي</option>
+        <option value="credit" {% if payment_type == 'credit' %}selected{% endif %}>آجل</option>
+      </select>
+      <button class="btn btn-primary"><i class="fas fa-filter"></i> عرض</button>
+    </form>
+    <table class="data-table" style="margin-top:1rem">
+      <thead><tr>
+        <th>الفاتورة</th><th>التاريخ</th><th>العميل</th><th>النوع</th>
+        <th>إجمالي البيع</th><th>التكلفة</th><th>صافي الربح</th><th></th>
+      </tr></thead>
+      <tbody>{% for row in rows %}<tr>
+        <td><strong>{{ row.invoice.invoice_number }}</strong></td>
+        <td>{{ row.invoice.date }}</td>
+        <td>{{ row.invoice.buyer_display }}</td>
+        <td>{{ row.invoice.get_payment_type_display }}</td>
+        <td>{{ row.sales }}</td>
+        <td>{{ row.cost }}</td>
+        <td><strong style="color:{% if row.profit >= 0 %}#16a34a{% else %}#dc2626{% endif %}">{{ row.profit }}</strong></td>
+        <td><a href="{% url 'sales_detail' row.invoice.pk %}" class="btn btn-sm btn-outline"><i class="fas fa-eye"></i></a></td>
+      </tr>{% empty %}<tr><td colspan="8" style="text-align:center;padding:2rem;color:#94a3b8">لا فواتير مرحّلة</td></tr>{% endfor %}
+      <tr style="background:#ecfdf5;font-weight:bold;font-size:1.05rem">
+        <td colspan="4">صافي الربح الإجمالي</td>
+        <td>{{ total_sales }}</td>
+        <td>{{ total_cost }}</td>
+        <td colspan="2" style="color:#16a34a">{{ total_profit }}</td>
+      </tr></tbody>
+    </table>
+    {% include 'partials/pagination.html' %}
+  </div>
+</div>
+{% endblock %}

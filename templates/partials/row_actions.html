@@ -1,0 +1,4 @@
+<a href="{{ edit_url }}" class="btn btn-sm btn-outline" title="تعديل"><i class="fas fa-edit"></i></a>
+{% if delete_url and can_delete %}
+<a href="{{ delete_url }}" class="btn btn-sm btn-danger" title="حذف"><i class="fas fa-trash"></i></a>
+{% endif %}

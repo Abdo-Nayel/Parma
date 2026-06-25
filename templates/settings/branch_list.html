@@ -1,0 +1,22 @@
+{% extends 'layout_app.html' %}
+{% load access_tags %}
+{% block page_content %}
+<div class="panel">
+  <div class="panel-header"><h3>الفروع</h3>{% can_access 'settings' 'add' as can_add %}{% if can_add %}<a href="{% url 'branch_add' %}" class="btn btn-sm btn-success"><i class="fas fa-plus"></i> إضافة</a>{% endif %}</div>
+  <div class="panel-body">
+    <form class="search-bar" method="get"><input name="q" class="form-control" placeholder="بحث بالاسم أو الكود..." value="{{ q }}"><button class="btn btn-primary"><i class="fas fa-search"></i></button></form>
+    <table class="data-table">
+      <thead><tr><th>الكود</th><th>الاسم</th><th>الهاتف</th><th>الحالة</th><th></th></tr></thead>
+      <tbody>{% for item in items %}<tr>
+        <td>{{ item.code }}</td><td><strong>{{ item.name }}</strong></td><td>{{ item.phone }}</td>
+        <td>{% if item.is_active %}<span class="badge badge-success">نشط</span>{% else %}<span class="badge badge-danger">موقوف</span>{% endif %}</td>
+        <td class="row-actions">{% can_access 'settings' 'edit' as ce %}{% can_access 'settings' 'delete' as cd %}
+          {% if ce %}<a href="{% url 'branch_edit' item.pk %}" class="btn btn-sm btn-outline"><i class="fas fa-edit"></i></a>{% endif %}
+          {% if cd %}<a href="{% url 'branch_delete' item.pk %}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></a>{% endif %}
+        </td>
+      </tr>{% empty %}<tr><td colspan="5" style="text-align:center;padding:2rem;color:#94a3b8">لا توجد فروع</td></tr>{% endfor %}</tbody>
+    </table>
+    {% include 'partials/pagination.html' %}
+  </div>
+</div>
+{% endblock %}

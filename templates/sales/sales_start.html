@@ -1,0 +1,123 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+<div class="panel" style="max-width:720px;margin:0 auto">
+  <div class="panel-header"><h3><i class="fas fa-cash-register"></i> فاتورة بيع جديدة</h3></div>
+  <div class="panel-body">
+    <p style="color:#64748b;margin-bottom:1rem">اختر نوع البيع ثم المخزن واضغط <strong>بدء الفاتورة</strong>.</p>
+    <form method="post" id="start-form">{% csrf_token %}
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>نوع البيع *</label>
+          <div style="display:flex;gap:1rem;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer">
+              <input type="radio" name="payment_type" value="cash" checked onchange="togglePayType()"> نقدي
+            </label>
+            <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer">
+              <input type="radio" name="payment_type" value="credit" onchange="togglePayType()"> آجل (عميل مكود)
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>الفرع</label>
+          <select name="branch" id="branch-select" class="form-control">
+            <option value="">—</option>
+            {% for b in branches %}<option value="{{ b.pk }}">{{ b.code }} — {{ b.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>المخزن *</label>
+          <select name="warehouse" id="warehouse-select" class="form-control" required>
+            <option value="">اختر المخزن...</option>
+            {% for w in warehouses %}
+            <option value="{{ w.pk }}" data-branch="{{ w.branch_id|default:'' }}">{{ w.code }} — {{ w.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>التاريخ</label>
+          <input name="date" type="date" class="form-control" value="{{ today }}">
+        </div>
+
+        <div id="cash-fields" class="form-group full" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div><label>اسم العميل (نقدي)</label><input name="walk_in_name" class="form-control" placeholder="اسم العميل"></div>
+          <div><label>الموبايل</label><input name="walk_in_phone" class="form-control" placeholder="01xxxxxxxxx"></div>
+        </div>
+
+        <div id="credit-fields" style="display:none" class="form-group full">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>كود العميل</label>
+              <input type="text" id="customer-code-input" class="form-control" placeholder="اكتب الكود واضغط Enter" list="customer-codes">
+              <datalist id="customer-codes">{% for c in customers %}<option value="{{ c.code }}">{{ c.name }}</option>{% endfor %}</datalist>
+            </div>
+            <div class="form-group">
+              <label>العميل *</label>
+              <select name="customer" id="customer-select" class="form-control">
+                <option value="">اختر العميل...</option>
+                {% for c in customers %}<option value="{{ c.pk }}" data-code="{{ c.code }}">{{ c.code }} — {{ c.name }}</option>{% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="margin-top:1rem">
+        <i class="fas fa-play"></i> بدء الفاتورة
+      </button>
+      <a href="{% url 'sales_list' %}" class="btn btn-outline">رجوع</a>
+    </form>
+
+    {% if open_drafts %}
+    <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid #e2e8f0">
+      <h4 style="font-weight:800;margin-bottom:0.75rem"><i class="fas fa-file-pen"></i> فواتير مسودة — متابعة التعديل</h4>
+      <table class="data-table">
+        <thead><tr><th>الرقم</th><th>التاريخ</th><th>العميل</th><th>الإجمالي</th><th></th></tr></thead>
+        <tbody>{% for d in open_drafts %}<tr>
+          <td>{{ d.invoice_number }}</td>
+          <td>{{ d.date }}</td>
+          <td>{{ d.buyer_display }}</td>
+          <td>{{ d.grand_total }}</td>
+          <td><a href="{% url 'sales_edit' d.pk %}" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i> متابعة</a></td>
+        </tr>{% endfor %}</tbody>
+      </table>
+      <p style="margin-top:0.5rem;font-size:0.85rem;color:#64748b"><a href="{% url 'sales_list' %}">عرض كل الفواتير</a></p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+<script>
+const CUST_LOOKUP = "{% url 'customer_lookup' %}";
+
+function togglePayType() {
+  const credit = document.querySelector('[name=payment_type]:checked').value === 'credit';
+  document.getElementById('credit-fields').style.display = credit ? 'block' : 'none';
+  document.getElementById('cash-fields').style.display = credit ? 'none' : 'grid';
+  document.getElementById('customer-select').required = credit;
+}
+
+document.getElementById('warehouse-select')?.addEventListener('change', function() {
+  const br = this.options[this.selectedIndex]?.dataset.branch;
+  if (br) document.getElementById('branch-select').value = br;
+});
+
+function pickCustomer(id, code) {
+  document.getElementById('customer-select').value = id;
+  if (code) document.getElementById('customer-code-input').value = code;
+}
+
+document.getElementById('customer-code-input')?.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const q = this.value.trim();
+  if (!q) return;
+  fetch(CUST_LOOKUP + '?q=' + encodeURIComponent(q)).then(r => r.json()).then(d => {
+    if (d.found) pickCustomer(d.id, d.code);
+    else alert('عميل غير موجود');
+  });
+});
+
+document.getElementById('customer-select')?.addEventListener('change', function() {
+  const opt = this.options[this.selectedIndex];
+  if (opt?.dataset.code) document.getElementById('customer-code-input').value = opt.dataset.code;
+});
+</script>
+{% endblock %}

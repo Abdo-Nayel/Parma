@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}LyomasPharmacy{% endblock %} | نظام الصيدلية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  <link rel="icon" href="{% static 'img/LyomasTech_Logo2.png' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+{% block body %}{% endblock %}
+<script>
+  function fillProductSelect(select) {
+    const tpl = document.getElementById('product-options');
+    if (!tpl || select.dataset.filled === '1') return;
+    const selectedId = select.dataset.selected || '';
+    const placeholder = select.querySelector('option[value=""]');
+    select.innerHTML = '';
+    if (placeholder) select.appendChild(placeholder.cloneNode(true));
+    tpl.content.querySelectorAll('option').forEach(opt => {
+      const o = opt.cloneNode(true);
+      if (selectedId && o.value === selectedId) o.selected = true;
+      select.appendChild(o);
+    });
+    select.dataset.filled = '1';
+    delete select.dataset.selected;
+  }
+
+  function initProductSelects(root) {
+    (root || document).querySelectorAll('.product-select').forEach(fillProductSelect);
+  }
+
+  function bindProductSelect(sel) {
+    sel.addEventListener('change', function() {
+      const opt = this.options[this.selectedIndex];
+      const row = this.closest('tr');
+      if (!opt || !row) return;
+      if (opt.dataset.price) {
+        const priceInput = row.querySelector('.price-input');
+        if (priceInput && !priceInput.value) priceInput.value = opt.dataset.price;
+      }
+      if (opt.dataset.cost) {
+        const costInput = row.querySelector('.cost-input');
+        if (costInput && !costInput.value) costInput.value = opt.dataset.cost;
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    initProductSelects();
+    document.querySelectorAll('.product-select').forEach(bindProductSelect);
+  });
+
+  function addLine() {
+    const tbody = document.getElementById('lines-body');
+    const template = document.getElementById('line-template');
+    if (!tbody || !template) return;
+    tbody.appendChild(template.content.cloneNode(true).firstElementChild);
+    const row = tbody.lastElementChild;
+    const select = row && row.querySelector('.product-select');
+    if (select) {
+      fillProductSelect(select);
+      bindProductSelect(select);
+    }
+  }
+
+  function removeLine(btn) {
+    btn.closest('tr').remove();
+  }
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

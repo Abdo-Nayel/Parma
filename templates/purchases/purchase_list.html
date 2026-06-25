@@ -1,0 +1,22 @@
+{% extends 'layout_app.html' %}
+{% load access_tags %}
+{% block page_content %}
+<div class="panel">
+  <div class="panel-header"><h3>فواتير المشتريات</h3>{% can_access 'purchases' 'add' as can_add %}{% if can_add %}<a href="{% url 'purchase_add' %}" class="btn btn-sm btn-success"><i class="fas fa-plus"></i> فاتورة جديدة</a>{% endif %}</div>
+  <div class="panel-body">
+    <table class="data-table">
+      <thead><tr><th>الرقم</th><th>التاريخ</th><th>المورد</th><th>المخزن</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead>
+      <tbody>{% for item in items %}<tr>
+        <td><strong>{{ item.invoice_number }}</strong></td><td>{{ item.date }}</td><td>{{ item.supplier.name }}</td><td>{{ item.warehouse.name }}</td>
+        <td>{{ item.grand_total }}</td>
+        <td>{% if item.status == 'posted' %}<span class="badge badge-success">مرحّلة</span>{% else %}<span class="badge badge-warning">مسودة</span>{% endif %}</td>
+        <td class="row-actions">{% can_access 'purchases' 'edit' as ce %}{% can_access 'purchases' 'delete' as cd %}
+          {% if item.status == 'draft' and ce %}<a href="{% url 'purchase_edit' item.pk %}" class="btn btn-sm btn-outline"><i class="fas fa-edit"></i></a>{% endif %}
+          {% if item.status == 'draft' and cd %}<a href="{% url 'purchase_delete' item.pk %}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></a>{% endif %}
+        </td>
+      </tr>{% empty %}<tr><td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8">لا توجد فواتير</td></tr>{% endfor %}</tbody>
+    </table>
+    {% include 'partials/pagination.html' %}
+  </div>
+</div>
+{% endblock %}

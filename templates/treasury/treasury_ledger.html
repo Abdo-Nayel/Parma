@@ -1,0 +1,20 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+<div class="panel"><div class="panel-header"><h3>{{ ledger_title }}</h3><span class="badge badge-info">الرصيد: {{ current_balance }}</span></div>
+<div class="panel-body">
+<form class="search-bar" method="get">
+  <select name="account" class="form-control" onchange="this.form.submit()">
+    <option value="cash" {% if account == 'cash' %}selected{% endif %}>الخزنة — {{ cash.name }}</option>
+    {% for b in banks %}<option value="{{ b.pk }}" {% if account == b.pk|stringformat:"s" %}selected{% endif %}>{{ b.code }} — {{ b.name }}</option>{% endfor %}
+  </select>
+</form>
+<table class="data-table" style="margin-top:1rem">
+  <thead><tr><th>التاريخ</th><th>المرجع</th><th>البيان</th><th>وارد</th><th>صادر</th></tr></thead>
+  <tbody>{% for e in entries %}<tr>
+    <td>{{ e.date }}</td><td>{{ e.ref }}</td><td>{{ e.desc }}</td>
+    <td>{% if e.in %}{{ e.in }}{% else %}—{% endif %}</td>
+    <td>{% if e.out %}{{ e.out }}{% else %}—{% endif %}</td>
+  </tr>{% empty %}<tr><td colspan="5" style="text-align:center;padding:2rem;color:#94a3b8">لا حركات</td></tr>{% endfor %}</tbody>
+</table>
+</div></div>
+{% endblock %}

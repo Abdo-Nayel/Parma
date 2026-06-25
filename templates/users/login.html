@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}تسجيل الدخول{% endblock %}
+{% block body %}
+<div class="login-page">
+  <div class="login-box">
+    <img src="{% static 'img/LyomasTech_Logo2.png' %}" alt="LyomasTech">
+    <h1>LyomasPharmacy</h1>
+    <p>نظام محاسبة الصيدلية — LyomasTech</p>
+    {% if messages %}
+      {% for msg in messages %}<div class="alert alert-error">{{ msg }}</div>{% endfor %}
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>اسم المستخدم</label>
+        <input type="text" name="username" class="form-control" autofocus required>
+      </div>
+      <div class="form-group">
+        <label>كلمة المرور</label>
+        <input type="password" name="password" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem;padding:0.75rem;">
+        <i class="fas fa-sign-in-alt"></i> دخول
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

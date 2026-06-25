@@ -1,0 +1,34 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+<div class="panel"><div class="panel-header">
+  <h3><i class="fas fa-university"></i> كشف البنوك</h3>
+  {% if bank %}<span class="badge badge-info">رصيد {{ bank.name }}: {{ current_balance }}</span>{% endif %}
+</div><div class="panel-body">
+<form class="search-bar" method="get">
+  <input name="q" class="form-control" placeholder="بحث باسم أو كود البنك..." value="{{ bank_q }}">
+  <select name="bank" class="form-control">
+    <option value="">اختر البنك...</option>
+    {% for b in banks %}<option value="{{ b.pk }}" {% if selected_bank == b.pk|stringformat:"s" %}selected{% endif %}>{{ b.code }} — {{ b.name }}</option>{% endfor %}
+  </select>
+  <input name="date_from" type="date" class="form-control" value="{{ date_from }}">
+  <input name="date_to" type="date" class="form-control" value="{{ date_to }}">
+  <button class="btn btn-primary"><i class="fas fa-filter"></i> عرض</button>
+</form>
+{% if bank %}
+<table class="data-table" style="margin-top:1rem">
+  <thead><tr><th>التاريخ</th><th>المرجع</th><th>البيان</th><th>وارد</th><th>صادر</th></tr></thead>
+  <tbody>{% for e in entries %}<tr>
+    <td>{{ e.date }}</td><td>{{ e.ref }}</td><td>{{ e.desc }}</td>
+    <td>{% if e.in %}{{ e.in }}{% else %}—{% endif %}</td>
+    <td>{% if e.out %}{{ e.out }}{% else %}—{% endif %}</td>
+  </tr>{% empty %}<tr><td colspan="5" style="text-align:center;padding:2rem;color:#94a3b8">لا حركات</td></tr>{% endfor %}
+  <tr style="background:#f1f5f9;font-weight:bold">
+    <td colspan="3">إجمالي الفترة</td>
+    <td>{{ total_in }}</td><td>{{ total_out }}</td>
+  </tr></tbody>
+</table>
+{% else %}
+<p style="text-align:center;padding:2rem;color:#94a3b8">لا يوجد بنوك مسجلة</p>
+{% endif %}
+</div></div>
+{% endblock %}

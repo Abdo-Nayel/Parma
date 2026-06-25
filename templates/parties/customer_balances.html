@@ -1,0 +1,18 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+<div class="panel"><div class="panel-header"><h3>أرصدة العملاء</h3><a href="{% url 'customer_statement' %}" class="btn btn-sm btn-outline">كشف حساب</a></div>
+<div class="panel-body">
+<form class="search-bar" method="get"><input name="q" class="form-control" placeholder="بحث..." value="{{ q }}"><button class="btn btn-primary"><i class="fas fa-search"></i></button></form>
+<table class="data-table">
+  <thead><tr><th>الكود</th><th>العميل</th><th>الهاتف</th><th>المستحق عليه</th><th></th></tr></thead>
+  <tbody>{% for item in items %}<tr>
+    <td>{{ item.code }}</td><td><strong>{{ item.name }}</strong></td><td>{{ item.phone }}</td>
+    <td>{% if item.balance > 0 %}<span class="badge badge-danger">{{ item.balance }}</span>{% else %}<span class="badge badge-success">{{ item.balance }}</span>{% endif %}</td>
+    <td>
+      <a href="{% url 'customer_statement' %}?customer={{ item.pk }}" class="btn btn-sm btn-outline">كشف</a>
+      <a href="{% url 'customer_payment' %}?customer={{ item.pk }}" class="btn btn-sm btn-success">تحصيل</a>
+    </td>
+  </tr>{% empty %}<tr><td colspan="5" style="text-align:center;padding:2rem;color:#94a3b8">لا يوجد عملاء</td></tr>{% endfor %}</tbody>
+</table>
+</div></div>
+{% endblock %}

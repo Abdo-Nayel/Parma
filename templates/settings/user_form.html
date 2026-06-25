@@ -1,0 +1,34 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+<div class="panel"><div class="panel-header"><h3>{{ page_title }}</h3></div><div class="panel-body">
+<form method="post">{% csrf_token %}
+<div class="form-grid">
+  <div class="form-group"><label>اسم المستخدم *</label><input name="username" class="form-control" required {% if obj %}readonly{% endif %} value="{{ obj.username|default:'' }}"></div>
+  <div class="form-group"><label>كلمة المرور {% if obj %}(اتركها فارغة للإبقاء){% else %}*{% endif %}</label><input name="password" type="password" class="form-control" {% if not obj %}required{% endif %}></div>
+  <div class="form-group"><label>الاسم الأول</label><input name="first_name" class="form-control" value="{{ obj.first_name|default:'' }}"></div>
+  <div class="form-group"><label>الاسم الأخير</label><input name="last_name" class="form-control" value="{{ obj.last_name|default:'' }}"></div>
+  <div class="form-group"><label>البريد</label><input name="email" type="email" class="form-control" value="{{ obj.email|default:'' }}"></div>
+  <div class="form-group"><label>الهاتف</label><input name="phone" class="form-control" value="{{ obj.phone|default:'' }}"></div>
+  <div class="form-group"><label>الدور</label><select name="role" class="form-control">{% for val, label in roles %}<option value="{{ val }}" {% if obj and obj.role == val %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+  <div class="form-group"><label>الفرع</label><select name="branch" class="form-control"><option value="">كل الفروع</option>{% for b in branches %}<option value="{{ b.pk }}" {% if obj and obj.branch_id == b.pk %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></div>
+  <div class="form-group"><label><input type="checkbox" name="is_active" {% if not obj or obj.is_active %}checked{% endif %}> نشط</label></div>
+</div>
+
+<h4 style="margin:1.5rem 0 0.75rem;font-weight:800"><i class="fas fa-shield-alt"></i> صلاحيات الشاشات</h4>
+<div class="permissions-table-wrap">
+<table class="data-table permissions-table">
+  <thead><tr><th>الشاشة</th><th>عرض</th><th>إضافة</th><th>تعديل</th><th>حذف</th></tr></thead>
+  <tbody>{% for row in module_rows %}<tr>
+    <td>{{ row.label }}</td>
+    <td><input type="checkbox" name="view_{{ row.module }}" {% if row.can_view %}checked{% endif %}></td>
+    <td><input type="checkbox" name="add_{{ row.module }}" {% if row.can_add %}checked{% endif %}></td>
+    <td><input type="checkbox" name="edit_{{ row.module }}" {% if row.can_edit %}checked{% endif %}></td>
+    <td><input type="checkbox" name="delete_{{ row.module }}" {% if row.can_delete %}checked{% endif %}></td>
+  </tr>{% endfor %}</tbody>
+</table>
+</div>
+
+<button class="btn btn-primary" style="margin-top:1rem"><i class="fas fa-save"></i> حفظ</button>
+<a href="{% url 'user_list' %}" class="btn btn-outline">رجوع</a>
+</form></div></div>
+{% endblock %}

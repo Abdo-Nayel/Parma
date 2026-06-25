@@ -1,0 +1,67 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+<div class="panel">
+  <div class="panel-header" style="background:{% if is_draft %}linear-gradient(135deg,#f59e0b,#ea580c){% else %}linear-gradient(135deg,#7c3aed,#0ea5e9){% endif %};color:#fff">
+    <h3><i class="fas fa-file-invoice"></i> فاتورة {{ obj.invoice_number }}</h3>
+    <span class="badge" style="background:rgba(255,255,255,0.2)">{{ obj.get_status_display }} | {{ obj.get_payment_type_display }}</span>
+  </div>
+  <div class="panel-body">
+    <div class="locked-info-grid">
+      <div><span class="lbl">العميل</span><strong>{{ obj.buyer_display }}</strong></div>
+      <div><span class="lbl">المخزن</span><strong>{{ obj.warehouse.code }} — {{ obj.warehouse.name }}</strong></div>
+      <div><span class="lbl">التاريخ</span><strong>{{ obj.date }}</strong></div>
+      <div><span class="lbl">الإجمالي</span><strong>{{ obj.grand_total }} {{ obj.currency }}</strong></div>
+      {% if obj.status == 'posted' %}
+      <div><span class="lbl">التكلفة</span><strong>{{ obj.total_cost }}</strong></div>
+      <div><span class="lbl">صافي الربح</span><strong style="color:#16a34a">{{ obj.gross_profit }}</strong></div>
+      {% endif %}
+    </div>
+
+    <h4 style="margin:1.5rem 0 0.5rem;font-weight:800">الأصناف</h4>
+    <table class="data-table">
+      <thead><tr><th>#</th><th>الصنف</th><th>كمية</th><th>بيع</th><th>تكلفة</th><th>إجمالي</th>{% if obj.status == 'posted' %}<th>ربح</th>{% endif %}</tr></thead>
+      <tbody>{% for line in lines %}<tr>
+        <td>{{ forloop.counter }}</td>
+        <td><strong>{{ line.product.name }}</strong><br><small>{{ line.product.sku }}</small></td>
+        <td>{{ line.quantity }}</td>
+        <td>{{ line.unit_price }}</td>
+        <td>{{ line.unit_cost|default:line.product.cost_price }}</td>
+        <td>{{ line.line_total }}</td>
+        {% if obj.status == 'posted' %}<td>{{ line.line_profit }}</td>{% endif %}
+      </tr>{% empty %}<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:#94a3b8">لا أصناف</td></tr>{% endfor %}</tbody>
+    </table>
+
+    {% if payments %}
+    <h4 style="margin:1.5rem 0 0.5rem;font-weight:800">التحصيل</h4>
+    <table class="data-table">
+      <thead><tr><th>النوع</th><th>البنك</th><th>المبلغ</th></tr></thead>
+      <tbody>{% for p in payments %}<tr>
+        <td>{{ p.get_payment_type_display }}</td>
+        <td>{{ p.bank|default:"—" }}</td>
+        <td>{{ p.amount }}</td>
+      </tr>{% endfor %}
+      <tr style="font-weight:bold;background:#f8fafc"><td colspan="2">المحصّل</td><td>{{ paid }}</td></tr>
+      {% if obj.payment_type == 'credit' %}<tr><td colspan="2">المتبقي على العميل</td><td>{{ remaining }}</td></tr>{% endif %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    {% if obj.notes %}<p style="margin-top:1rem"><strong>ملاحظات:</strong> {{ obj.notes }}</p>{% endif %}
+
+    <div style="margin-top:1.5rem;display:flex;gap:0.5rem;flex-wrap:wrap">
+      {% if is_draft %}
+      <a href="{% url 'sales_edit' obj.pk %}" class="btn btn-primary"><i class="fas fa-edit"></i> متابعة التعديل</a>
+      {% else %}
+      <a href="{% url 'sales_reopen' obj.pk %}" class="btn btn-primary"><i class="fas fa-edit"></i> تعديل الفاتورة</a>
+      <a href="{% url 'sales_receipt' obj.pk %}" class="btn btn-outline" target="_blank"><i class="fas fa-print"></i> طباعة إيصال</a>
+      {% endif %}
+      <a href="{% url 'sales_delete' obj.pk %}" class="btn btn-danger"><i class="fas fa-trash"></i> حذف</a>
+      <a href="{% url 'sales_list' %}" class="btn btn-outline">رجوع للقائمة</a>
+    </div>
+  </div>
+</div>
+<style>
+.locked-info-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; }
+.locked-info-grid .lbl { display:block; font-size:0.75rem; color:#64748b; margin-bottom:0.2rem; }
+</style>
+{% endblock %}

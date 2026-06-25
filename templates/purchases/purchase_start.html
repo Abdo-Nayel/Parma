@@ -1,0 +1,85 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+<div class="panel" style="max-width:720px;margin:0 auto">
+  <div class="panel-header"><h3><i class="fas fa-file-invoice"></i> فاتورة مشتريات جديدة</h3></div>
+  <div class="panel-body">
+    <p style="color:#64748b;margin-bottom:1rem">اختر الفرع والمخزن والمورد (بالكود أو الاسم) ثم <strong>بدء الفاتورة</strong>.</p>
+    <form method="post">{% csrf_token %}
+      <div class="form-grid">
+        <div class="form-group">
+          <label>الفرع *</label>
+          <select name="branch" id="branch-select" class="form-control" required>
+            <option value="">اختر الفرع...</option>
+            {% for b in branches %}<option value="{{ b.pk }}">{{ b.code }} — {{ b.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>المخزن *</label>
+          <select name="warehouse" id="warehouse-select" class="form-control" required>
+            <option value="">اختر المخزن...</option>
+            {% for w in warehouses %}
+            <option value="{{ w.pk }}" data-branch="{{ w.branch_id|default:'' }}">{{ w.code }} — {{ w.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>كود المورد</label>
+          <input type="text" id="supplier-code-input" class="form-control" placeholder="اكتب الكود واضغط Enter" list="supplier-codes">
+          <datalist id="supplier-codes">{% for s in suppliers %}<option value="{{ s.code }}">{{ s.name }}</option>{% endfor %}</datalist>
+        </div>
+        <div class="form-group">
+          <label>المورد *</label>
+          <select name="supplier" id="supplier-select" class="form-control" required>
+            <option value="">اختر المورد...</option>
+            {% for s in suppliers %}<option value="{{ s.pk }}" data-code="{{ s.code }}">{{ s.code }} — {{ s.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>التاريخ</label>
+          <input name="date" type="date" class="form-control" value="{{ today }}">
+        </div>
+      </div>
+      {% if not suppliers %}
+      <div class="alert alert-warning" style="margin-top:1rem">لا يوجد موردين — <a href="{% url 'supplier_add' %}">أضف مورداً</a> أولاً</div>
+      {% endif %}
+      <button type="submit" class="btn btn-primary" style="margin-top:1rem">
+        <i class="fas fa-play"></i> بدء الفاتورة
+      </button>
+      <a href="{% url 'purchase_list' %}" class="btn btn-outline">رجوع</a>
+    </form>
+  </div>
+</div>
+<script>
+const SUP_LOOKUP = "{% url 'supplier_lookup' %}";
+
+document.getElementById('warehouse-select')?.addEventListener('change', function() {
+  const br = this.options[this.selectedIndex]?.dataset.branch;
+  if (br) document.getElementById('branch-select').value = br;
+});
+
+function pickSupplier(id, code) {
+  document.getElementById('supplier-select').value = id;
+  if (code) document.getElementById('supplier-code-input').value = code;
+}
+
+document.getElementById('supplier-code-input')?.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const q = this.value.trim();
+  if (!q) return;
+  const sel = document.getElementById('supplier-select');
+  for (const opt of sel.options) {
+    if (opt.dataset.code === q) { pickSupplier(opt.value, q); return; }
+  }
+  fetch(SUP_LOOKUP + '?q=' + encodeURIComponent(q)).then(r => r.json()).then(d => {
+    if (d.found) pickSupplier(d.id, d.code);
+    else alert('مورد غير موجود');
+  });
+});
+
+document.getElementById('supplier-select')?.addEventListener('change', function() {
+  const opt = this.options[this.selectedIndex];
+  if (opt?.dataset.code) document.getElementById('supplier-code-input').value = opt.dataset.code;
+});
+</script>
+{% endblock %}

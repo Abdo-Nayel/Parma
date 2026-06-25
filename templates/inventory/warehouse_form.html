@@ -1,0 +1,17 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+<div class="panel"><div class="panel-header"><h3>{{ page_title }}</h3></div>
+<div class="panel-body">
+<form method="post">{% csrf_token %}
+<div class="form-grid">
+  <div class="form-group"><label>الكود</label><input name="code" class="form-control" value="{% if obj %}{{ obj.code }}{% else %}{{ suggested_code }}{% endif %}"></div>
+  <div class="form-group"><label>اسم المخزن *</label><input name="name" class="form-control" required value="{{ obj.name|default:'' }}"></div>
+  <div class="form-group"><label>الفرع</label><select name="branch" class="form-control"><option value="">—</option>{% for b in branches %}<option value="{{ b.pk }}" {% if obj and obj.branch_id == b.pk %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></div>
+  <div class="form-group"><label>الموقع</label><input name="location" class="form-control" value="{{ obj.location|default:'' }}"></div>
+  <div class="form-group"><label class="form-check"><input type="checkbox" name="is_active" {% if not obj or obj.is_active %}checked{% endif %}> نشط</label></div>
+  <div class="form-group full"><label>ملاحظات</label><textarea name="notes" class="form-control" rows="2">{{ obj.notes|default:'' }}</textarea></div>
+</div>
+<button class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
+<a href="{% url 'warehouse_list' %}" class="btn btn-outline">رجوع</a>
+</form></div></div>
+{% endblock %}

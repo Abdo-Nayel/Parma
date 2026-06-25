@@ -1,0 +1,29 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+<div class="panel"><div class="panel-header">
+  <h3>كشف حساب مورد</h3>
+  <a href="{% url 'supplier_payment' %}{% if supplier %}?supplier={{ supplier.pk }}{% endif %}" class="btn btn-sm btn-success"><i class="fas fa-money-bill"></i> سداد مورد</a>
+</div><div class="panel-body">
+<form class="search-bar" method="get">
+  <select name="supplier" class="form-control" required>
+    <option value="">اختر المورد...</option>
+    {% for s in suppliers %}<option value="{{ s.pk }}" {% if supplier and supplier.pk == s.pk %}selected{% endif %}>{{ s.code }} — {{ s.name }}</option>{% endfor %}
+  </select>
+  <input name="date_from" type="date" class="form-control" value="{{ date_from }}" placeholder="من تاريخ">
+  <input name="date_to" type="date" class="form-control" value="{{ date_to }}" placeholder="إلى تاريخ">
+  <button class="btn btn-primary"><i class="fas fa-filter"></i> عرض</button>
+</form>
+{% if supplier %}
+<p style="margin:1rem 0"><strong>{{ supplier.code }} — {{ supplier.name }}</strong> | الرصيد الحالي: <strong>{{ supplier.balance }}</strong></p>
+<table class="data-table">
+  <thead><tr><th>التاريخ</th><th>المرجع</th><th>البيان</th><th>مدين</th><th>دائن</th><th>الرصيد</th></tr></thead>
+  <tbody>{% for e in entries %}<tr>
+    <td>{{ e.date }}</td><td>{{ e.ref }}</td><td>{{ e.desc }}</td>
+    <td>{% if e.debit %}{{ e.debit }}{% else %}—{% endif %}</td>
+    <td>{% if e.credit %}{{ e.credit }}{% else %}—{% endif %}</td>
+    <td><strong>{{ e.balance }}</strong></td>
+  </tr>{% empty %}<tr><td colspan="6" style="text-align:center;padding:2rem;color:#94a3b8">لا حركات في هذه الفترة</td></tr>{% endfor %}</tbody>
+</table>
+{% endif %}
+</div></div>
+{% endblock %}

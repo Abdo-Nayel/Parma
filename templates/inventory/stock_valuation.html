@@ -1,0 +1,55 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+<div class="panel">
+  <div class="panel-header"><h3><i class="fas fa-coins"></i> تقييم المخزون</h3></div>
+  <div class="panel-body">
+    <form class="search-bar" method="get">
+      <select name="group_by" class="form-control">
+        <option value="product" {% if group_by == 'product' %}selected{% endif %}>حسب الصنف الفرعي</option>
+        <option value="category" {% if group_by == 'category' %}selected{% endif %}>حسب المجموعة الرئيسية</option>
+      </select>
+      <select name="category" class="form-control">
+        <option value="">كل المجموعات</option>
+        {% for c in categories %}<option value="{{ c.pk }}" {% if selected_category == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.code }} — {{ c.name }}</option>{% endfor %}
+      </select>
+      <select name="warehouse" class="form-control">
+        <option value="">كل المخازن</option>
+        {% for w in warehouses %}<option value="{{ w.pk }}" {% if selected_warehouse == w.pk|stringformat:"s" %}selected{% endif %}>{{ w.code }} — {{ w.name }}</option>{% endfor %}
+      </select>
+      <button class="btn btn-primary"><i class="fas fa-filter"></i> عرض</button>
+    </form>
+
+    {% if group_by == 'category' %}
+    <table class="data-table" style="margin-top:1rem">
+      <thead><tr><th>المجموعة</th><th>الكمية</th><th>قيمة التكلفة</th><th>قيمة البيع</th></tr></thead>
+      <tbody>{% for row in rows %}<tr>
+        <td><strong>{{ row.code }}</strong> — {{ row.name }}</td>
+        <td>{{ row.qty }}</td>
+        <td>{{ row.cost_value }}</td>
+        <td>{{ row.sale_value }}</td>
+      </tr>{% empty %}<tr><td colspan="4" style="text-align:center;padding:2rem;color:#94a3b8">لا يوجد مخزون</td></tr>{% endfor %}
+      <tr style="background:#f1f5f9;font-weight:bold">
+        <td>الإجمالي</td><td>{{ total_qty }}</td><td>{{ total_cost }}</td><td>{{ total_sale }}</td>
+      </tr></tbody>
+    </table>
+    {% else %}
+    <table class="data-table" style="margin-top:1rem">
+      <thead><tr><th>الصنف</th><th>المجموعة</th><th>الكمية</th><th>تكلفة الوحدة</th><th>سعر البيع</th><th>إجمالي التكلفة</th><th>إجمالي البيع</th></tr></thead>
+      <tbody>{% for row in rows %}<tr>
+        <td><strong>{{ row.code }}</strong> — {{ row.name }}</td>
+        <td>{{ row.category }}</td>
+        <td>{{ row.qty }}</td>
+        <td>{{ row.unit_cost }}</td>
+        <td>{{ row.unit_sale }}</td>
+        <td>{{ row.cost_value }}</td>
+        <td>{{ row.sale_value }}</td>
+      </tr>{% empty %}<tr><td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8">لا يوجد مخزون</td></tr>{% endfor %}
+      <tr style="background:#f1f5f9;font-weight:bold">
+        <td colspan="2">الإجمالي</td><td>{{ total_qty }}</td><td colspan="2"></td><td>{{ total_cost }}</td><td>{{ total_sale }}</td>
+      </tr></tbody>
+    </table>
+    {% endif %}
+    {% include 'partials/pagination.html' %}
+  </div>
+</div>
+{% endblock %}

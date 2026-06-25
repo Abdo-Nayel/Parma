@@ -1,0 +1,11 @@
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="pagination-bar" aria-label="ترقيم الصفحات">
+  {% if page_obj.has_previous %}
+    <a class="btn btn-sm btn-outline" href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">السابق</a>
+  {% endif %}
+  <span class="pagination-info">صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }} ({{ page_obj.paginator.count }} سجل)</span>
+  {% if page_obj.has_next %}
+    <a class="btn btn-sm btn-outline" href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">التالي</a>
+  {% endif %}
+</nav>
+{% endif %}

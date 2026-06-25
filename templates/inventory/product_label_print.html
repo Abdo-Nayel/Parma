@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>ليبل — {{ product.name }}</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <style>
+    @page { margin: 5mm; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 8px; }
+    .labels { display: flex; flex-wrap: wrap; gap: 4mm; }
+    .label {
+      width: {{ settings.label_width_mm }}mm;
+      min-height: {{ settings.label_height_mm }}mm;
+      border: 1px dashed #ccc;
+      padding: 2mm;
+      text-align: center;
+      box-sizing: border-box;
+      page-break-inside: avoid;
+      font-size: {{ settings.font_size }}px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .lbl-name { font-weight: 700; line-height: 1.2; margin-bottom: 1mm; }
+    .lbl-sku { color: #555; font-size: 0.9em; }
+    .lbl-price { font-weight: 800; margin-top: 1mm; }
+    .lbl-co { font-size: 0.85em; color: #666; }
+    .no-print { margin-bottom: 12px; }
+    @media print { .no-print { display: none; } .label { border: none; } }
+  </style>
+</head>
+<body>
+<div class="no-print">
+  <button onclick="window.print()">طباعة</button>
+  <a href="{% url 'product_list' %}">رجوع للأصناف</a>
+</div>
+<div class="labels">
+  {% for i in copy_range %}
+  <div class="label">
+    {% if settings.show_product_name %}<div class="lbl-name">{{ product.name }}</div>{% endif %}
+    {% if settings.show_sku %}<div class="lbl-sku">{{ product.sku }}</div>{% endif %}
+    <svg class="barcode"></svg>
+    {% if settings.show_price %}<div class="lbl-price">{{ product.sale_price }} ج.م</div>{% endif %}
+    {% if settings.show_company and product.company %}<div class="lbl-co">{{ product.company.name }}</div>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+<script>
+  document.querySelectorAll('.barcode').forEach(el => {
+    JsBarcode(el, "{{ barcode_value }}", {
+      format: "CODE128",
+      width: 1.5,
+      height: {{ settings.barcode_height }},
+      displayValue: true,
+      fontSize: {{ settings.font_size }},
+      margin: 2
+    });
+  });
+</script>
+</body>
+</html>

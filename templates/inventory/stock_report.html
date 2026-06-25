@@ -1,0 +1,40 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+<div class="panel">
+  <div class="panel-header"><h3><i class="fas fa-search"></i> استعلام مخزون</h3></div>
+  <div class="panel-body">
+    <form class="search-bar" method="get">
+      <input name="q" class="form-control" placeholder="سكان / بحث بالباركود أو الكود أو الاسم..." value="{{ q }}" autofocus>
+      <select name="category" class="form-control">
+        <option value="">كل المجموعات الرئيسية</option>
+        {% for c in categories %}<option value="{{ c.pk }}" {% if selected_category == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.code }} — {{ c.name }}</option>{% endfor %}
+      </select>
+      <select name="product" class="form-control">
+        <option value="">كل الأصناف الفرعية</option>
+        {% for p in products %}<option value="{{ p.pk }}" {% if selected_product == p.pk|stringformat:"s" %}selected{% endif %}>{{ p.sku }} — {{ p.name }}</option>{% endfor %}
+      </select>
+      <select name="warehouse" class="form-control">
+        <option value="">كل المخازن</option>
+        {% for w in warehouses %}<option value="{{ w.pk }}" {% if selected_warehouse == w.pk|stringformat:"s" %}selected{% endif %}>{{ w.code }} — {{ w.name }}</option>{% endfor %}
+      </select>
+      <button class="btn btn-primary"><i class="fas fa-filter"></i> عرض</button>
+    </form>
+    <table class="data-table" style="margin-top:1rem">
+      <thead><tr>
+        <th>المجموعة</th><th>الصنف</th><th>الباركود</th><th>المخزن</th>
+        <th>الكمية</th><th>سعر البيع</th><th>التكلفة</th>
+      </tr></thead>
+      <tbody>{% for row in rows %}<tr>
+        <td>{{ row.product__category__code }} — {{ row.product__category__name }}</td>
+        <td><strong>{{ row.product__sku }}</strong> — {{ row.product__name }}</td>
+        <td>{{ row.product__barcode|default:"—" }}</td>
+        <td>{{ row.warehouse__code }} — {{ row.warehouse__name }}</td>
+        <td><strong>{{ row.total_qty }}</strong></td>
+        <td>{{ row.product__sale_price }}</td>
+        <td>{{ row.product__cost_price }}</td>
+      </tr>{% empty %}<tr><td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8">لا يوجد رصيد مطابق</td></tr>{% endfor %}</tbody>
+    </table>
+    {% include 'partials/pagination.html' %}
+  </div>
+</div>
+{% endblock %}
