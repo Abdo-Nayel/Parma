@@ -3,5 +3,7 @@ __pycache__/
 *.pyc
 pharmacy.db
 media/
+staticfiles/
 *.sqlite3
 .idea/
+.env

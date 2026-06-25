@@ -1,0 +1,20 @@
+[Unit]
+Description=LyomasPharmacy (Parma) Gunicorn
+After=network.target
+
+[Service]
+User=softwarehouse
+Group=www-data
+WorkingDirectory=/var/www/parma
+EnvironmentFile=/var/www/parma/.env
+ExecStart=/var/www/parma/venv/bin/gunicorn config.wsgi:application \
+    --bind 127.0.0.1:8001 \
+    --workers 3 \
+    --timeout 120 \
+    --access-logfile /var/log/parma/access.log \
+    --error-logfile /var/log/parma/error.log
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
