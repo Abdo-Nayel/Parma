@@ -1,0 +1,45 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+<div class="panel">
+  <div class="panel-header">
+    <h3><i class="fas fa-undo"></i> مرتجعات الفواتير</h3>
+    <a href="{% url 'return_add' %}" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> مرتجع جديد</a>
+  </div>
+  <div class="panel-body">
+    <form class="search-bar" method="get">
+      <select name="kind" class="form-control">
+        <option value="">كل الأنواع</option>
+        <option value="sales" {% if kind == 'sales' %}selected{% endif %}>مرتجع مبيعات</option>
+        <option value="purchase" {% if kind == 'purchase' %}selected{% endif %}>مرتجع مشتريات</option>
+      </select>
+      <button class="btn btn-primary"><i class="fas fa-filter"></i> تصفية</button>
+    </form>
+    <table class="data-table" style="margin-top:1rem">
+      <thead><tr><th>الرقم</th><th>النوع</th><th>التاريخ</th><th>الطرف</th><th>المخزن</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>{{ item.return_number }}</td>
+          <td>{{ item.get_kind_display }}</td>
+          <td>{{ item.date }}</td>
+          <td>{{ item.party_display }}</td>
+          <td>{{ item.warehouse.name }}</td>
+          <td>{{ item.grand_total }}</td>
+          <td><span class="badge {% if item.status == 'posted' %}badge-success{% else %}badge-warning{% endif %}">{{ item.get_status_display }}</span></td>
+          <td class="row-actions">
+            {% if item.status == 'draft' %}
+            <a href="{% url 'return_edit' item.pk %}" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></a>
+            {% else %}
+            <a href="{% url 'return_detail' item.pk %}" class="btn btn-sm btn-outline"><i class="fas fa-eye"></i></a>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" style="text-align:center;padding:2rem;color:#94a3b8">لا توجد مرتجعات</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% include 'partials/pagination.html' %}
+  </div>
+</div>
+{% endblock %}

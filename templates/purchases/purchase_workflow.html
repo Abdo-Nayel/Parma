@@ -9,8 +9,7 @@
   </div>
   <div class="panel-body">
     <div class="locked-info-grid">
-      <div><span class="lbl">الفرع</span><strong>{% if obj.branch %}{{ obj.branch.code }} — {{ obj.branch.name }}{% else %}—{% endif %}</strong></div>
-      <div><span class="lbl">المخزن</span><strong>{{ obj.warehouse.code }} — {{ obj.warehouse.name }}</strong></div>
+      <div><span class="lbl">المخزن</span><strong>{{ obj.warehouse.name }}</strong></div>
       <div><span class="lbl">المورد</span><strong>{{ obj.supplier.code }} — {{ obj.supplier.name }}</strong></div>
       <div><span class="lbl">التاريخ</span><strong>{{ obj.date }}</strong></div>
     </div>

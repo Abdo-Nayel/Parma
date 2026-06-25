@@ -3,22 +3,15 @@
 <div class="panel" style="max-width:720px;margin:0 auto">
   <div class="panel-header"><h3><i class="fas fa-file-invoice"></i> فاتورة مشتريات جديدة</h3></div>
   <div class="panel-body">
-    <p style="color:#64748b;margin-bottom:1rem">اختر الفرع والمخزن والمورد (بالكود أو الاسم) ثم <strong>بدء الفاتورة</strong>.</p>
+    <p style="color:#64748b;margin-bottom:1rem">اختر المخزن والمورد (بالكود أو الاسم) ثم <strong>بدء الفاتورة</strong>.</p>
     <form method="post">{% csrf_token %}
       <div class="form-grid">
-        <div class="form-group">
-          <label>الفرع *</label>
-          <select name="branch" id="branch-select" class="form-control" required>
-            <option value="">اختر الفرع...</option>
-            {% for b in branches %}<option value="{{ b.pk }}">{{ b.code }} — {{ b.name }}</option>{% endfor %}
-          </select>
-        </div>
         <div class="form-group">
           <label>المخزن *</label>
           <select name="warehouse" id="warehouse-select" class="form-control" required>
             <option value="">اختر المخزن...</option>
             {% for w in warehouses %}
-            <option value="{{ w.pk }}" data-branch="{{ w.branch_id|default:'' }}">{{ w.code }} — {{ w.name }}</option>
+            <option value="{{ w.pk }}">{{ w.name }}</option>
             {% endfor %}
           </select>
         </div>
@@ -51,11 +44,6 @@
 </div>
 <script>
 const SUP_LOOKUP = "{% url 'supplier_lookup' %}";
-
-document.getElementById('warehouse-select')?.addEventListener('change', function() {
-  const br = this.options[this.selectedIndex]?.dataset.branch;
-  if (br) document.getElementById('branch-select').value = br;
-});
 
 function pickSupplier(id, code) {
   document.getElementById('supplier-select').value = id;

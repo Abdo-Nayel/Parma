@@ -1,0 +1,28 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+<div class="panel">
+  <div class="panel-header">
+    <h3><i class="fas fa-undo"></i> {{ obj.return_number }}</h3>
+    <span class="badge badge-success">{{ obj.get_status_display }}</span>
+  </div>
+  <div class="panel-body">
+    <div class="locked-info-grid" style="margin-bottom:1rem">
+      <div><span class="lbl">النوع</span><strong>{{ obj.get_kind_display }}</strong></div>
+      <div><span class="lbl">الطرف</span><strong>{{ obj.party_display }}</strong></div>
+      <div><span class="lbl">المخزن</span><strong>{{ obj.warehouse.name }}</strong></div>
+      <div><span class="lbl">التاريخ</span><strong>{{ obj.date }}</strong></div>
+      <div><span class="lbl">الإجمالي</span><strong>{{ obj.grand_total }}</strong></div>
+      <div><span class="lbl">المدفوع/المسترد</span><strong>{{ obj.paid_amount }}</strong></div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>الصنف</th><th>كمية</th><th>سعر</th><th>إجمالي</th></tr></thead>
+      <tbody>
+        {% for line in lines %}
+        <tr><td>{{ line.product.name }}</td><td>{{ line.quantity }}</td><td>{{ line.unit_price }}</td><td>{{ line.line_total }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <a href="{% url 'return_list' %}" class="btn btn-outline" style="margin-top:1rem">رجوع للقائمة</a>
+  </div>
+</div>
+{% endblock %}

@@ -2,13 +2,19 @@
 {% block page_content %}
 <div class="panel"><div class="panel-header">
   <h3><i class="fas fa-university"></i> كشف البنوك</h3>
-  {% if bank %}<span class="badge badge-info">رصيد {{ bank.name }}: {{ current_balance }}</span>{% endif %}
+  {% if bank %}
+  <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+    <span class="badge badge-info">رصيد {{ bank.name }}: {{ current_balance }}</span>
+    <a href="?bank={{ bank.pk }}&date_from={{ date_from }}&date_to={{ date_to }}&export=excel" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i> Excel</a>
+    <a href="?bank={{ bank.pk }}&date_from={{ date_from }}&date_to={{ date_to }}&export=pdf" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i> PDF</a>
+  </div>
+  {% endif %}
 </div><div class="panel-body">
 <form class="search-bar" method="get">
-  <input name="q" class="form-control" placeholder="بحث باسم أو كود البنك..." value="{{ bank_q }}">
+  <input name="q" class="form-control" placeholder="بحث باسم البنك..." value="{{ bank_q }}">
   <select name="bank" class="form-control">
     <option value="">اختر البنك...</option>
-    {% for b in banks %}<option value="{{ b.pk }}" {% if selected_bank == b.pk|stringformat:"s" %}selected{% endif %}>{{ b.code }} — {{ b.name }}</option>{% endfor %}
+    {% for b in banks %}<option value="{{ b.pk }}" {% if selected_bank == b.pk|stringformat:"s" %}selected{% endif %}>{{ b.name }}</option>{% endfor %}
   </select>
   <input name="date_from" type="date" class="form-control" value="{{ date_from }}">
   <input name="date_to" type="date" class="form-control" value="{{ date_to }}">
@@ -25,6 +31,14 @@
   <tr style="background:#f1f5f9;font-weight:bold">
     <td colspan="3">إجمالي الفترة</td>
     <td>{{ total_in }}</td><td>{{ total_out }}</td>
+  </tr>
+  <tr style="background:#dbeafe;font-weight:bold;font-size:1.05rem">
+    <td colspan="3">صافي الفترة (وارد − صادر)</td>
+    <td colspan="2">{{ net_balance }}</td>
+  </tr>
+  <tr style="background:#dcfce7;font-weight:bold">
+    <td colspan="3">الرصيد الحالي</td>
+    <td colspan="2">{{ current_balance }}</td>
   </tr></tbody>
 </table>
 {% else %}

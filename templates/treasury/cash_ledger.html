@@ -2,7 +2,11 @@
 {% block page_content %}
 <div class="panel"><div class="panel-header">
   <h3><i class="fas fa-cash-register"></i> كشف الخزنة النقدية</h3>
-  <span class="badge badge-info">الرصيد الحالي: {{ current_balance }}</span>
+  <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+    <span class="badge badge-info">الرصيد الحالي: {{ current_balance }}</span>
+    <a href="?date_from={{ date_from }}&date_to={{ date_to }}&export=excel" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i> Excel</a>
+    <a href="?date_from={{ date_from }}&date_to={{ date_to }}&export=pdf" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i> PDF</a>
+  </div>
 </div><div class="panel-body">
 <form class="search-bar" method="get">
   <input name="date_from" type="date" class="form-control" value="{{ date_from }}" placeholder="من تاريخ">
@@ -19,6 +23,14 @@
   <tr style="background:#f1f5f9;font-weight:bold">
     <td colspan="3">إجمالي الفترة</td>
     <td>{{ total_in }}</td><td>{{ total_out }}</td>
+  </tr>
+  <tr style="background:#dbeafe;font-weight:bold;font-size:1.05rem">
+    <td colspan="3">صافي الفترة (وارد − صادر)</td>
+    <td colspan="2">{{ net_balance }}</td>
+  </tr>
+  <tr style="background:#dcfce7;font-weight:bold">
+    <td colspan="3">الرصيد الحالي</td>
+    <td colspan="2">{{ current_balance }}</td>
   </tr></tbody>
 </table>
 </div></div>

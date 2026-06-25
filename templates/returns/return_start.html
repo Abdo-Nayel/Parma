@@ -1,0 +1,80 @@
+{% extends 'layout_app.html' %}
+{% block page_content %}
+<div class="panel" style="max-width:760px;margin:0 auto">
+  <div class="panel-header"><h3><i class="fas fa-undo"></i> مرتجع فاتورة جديد</h3></div>
+  <div class="panel-body">
+    <p style="color:#64748b;margin-bottom:1rem">
+      <strong>مرتجع مبيعات:</strong> إدخال للمخزون + استرداد نقدي/بنكي &nbsp;|&nbsp;
+      <strong>مرتجع مشتريات:</strong> خروج من المخزون + تحصيل نقدي/بنكي
+    </p>
+    <form method="post">{% csrf_token %}
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>نوع المرتجع *</label>
+          <select name="kind" id="kind-select" class="form-control" required>
+            <option value="">اختر...</option>
+            <option value="sales">مرتجع مبيعات (إدخال مخزون)</option>
+            <option value="purchase">مرتجع مشتريات (خروج مخزون)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>المخزن *</label>
+          <select name="warehouse" class="form-control" required>
+            <option value="">اختر المخزن...</option>
+            {% for w in warehouses %}<option value="{{ w.pk }}">{{ w.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>التاريخ</label>
+          <input name="date" type="date" class="form-control" value="{{ today }}">
+        </div>
+        <div id="sales-party" class="form-group full" style="display:none">
+          <label>نوع العميل</label>
+          <select name="party_type" id="party-type" class="form-control">
+            <option value="cash">نقدي</option>
+            <option value="credit">عميل آجل</option>
+          </select>
+        </div>
+        <div id="walk-in-fields" class="form-group" style="display:none">
+          <label>اسم العميل</label>
+          <input name="walk_in_name" class="form-control">
+        </div>
+        <div id="walk-in-phone" class="form-group" style="display:none">
+          <label>موبايل</label>
+          <input name="walk_in_phone" class="form-control">
+        </div>
+        <div id="customer-field" class="form-group full" style="display:none">
+          <label>العميل *</label>
+          <select name="customer" class="form-control">
+            <option value="">اختر العميل...</option>
+            {% for c in customers %}<option value="{{ c.pk }}">{{ c.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div id="supplier-field" class="form-group full" style="display:none">
+          <label>المورد *</label>
+          <select name="supplier" class="form-control">
+            <option value="">اختر المورد...</option>
+            {% for s in suppliers %}<option value="{{ s.pk }}">{{ s.name }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-success btn-lg" style="margin-top:1rem"><i class="fas fa-play"></i> بدء المرتجع</button>
+    </form>
+  </div>
+</div>
+<script>
+const kind = document.getElementById('kind-select');
+const partyType = document.getElementById('party-type');
+function refreshParty() {
+  const k = kind.value;
+  document.getElementById('sales-party').style.display = k === 'sales' ? '' : 'none';
+  document.getElementById('supplier-field').style.display = k === 'purchase' ? '' : 'none';
+  const credit = partyType?.value === 'credit';
+  document.getElementById('customer-field').style.display = (k === 'sales' && credit) ? '' : 'none';
+  document.getElementById('walk-in-fields').style.display = (k === 'sales' && !credit) ? '' : 'none';
+  document.getElementById('walk-in-phone').style.display = (k === 'sales' && !credit) ? '' : 'none';
+}
+kind?.addEventListener('change', refreshParty);
+partyType?.addEventListener('change', refreshParty);
+</script>
+{% endblock %}

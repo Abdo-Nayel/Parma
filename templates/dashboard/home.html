@@ -2,29 +2,29 @@
 {% block page_content %}
 <div class="stats-grid">
   <div class="stat-card" style="animation-delay:0.05s">
-    <div class="icon icon-blue"><i class="fas fa-pills"></i></div>
-    <div class="value">{{ products_count }}</div>
-    <div class="label">أصناف مسجّلة</div>
-  </div>
-  <div class="stat-card" style="animation-delay:0.1s">
     <div class="icon icon-red"><i class="fas fa-exclamation-triangle"></i></div>
     <div class="value">{{ low_stock }}</div>
     <div class="label">نواقص مخزون</div>
   </div>
-  <div class="stat-card" style="animation-delay:0.15s">
+  <div class="stat-card" style="animation-delay:0.1s">
     <div class="icon icon-green"><i class="fas fa-cash-register"></i></div>
     <div class="value">{{ today_sales|floatformat:0 }}</div>
     <div class="label">مبيعات اليوم</div>
   </div>
-  <div class="stat-card" style="animation-delay:0.2s">
+  <div class="stat-card" style="animation-delay:0.15s">
     <div class="icon icon-purple"><i class="fas fa-users"></i></div>
     <div class="value">{{ customers_count }}</div>
     <div class="label">عملاء</div>
   </div>
-  <div class="stat-card" style="animation-delay:0.25s">
-    <div class="icon icon-orange"><i class="fas fa-truck"></i></div>
-    <div class="value">{{ suppliers_count }}</div>
-    <div class="label">موردين</div>
+  <div class="stat-card stat-card-treasury" style="animation-delay:0.2s">
+    <div class="icon icon-green"><i class="fas fa-money-bill-wave"></i></div>
+    <div class="value">{{ cash_balance|floatformat:2 }}</div>
+    <div class="label">نقدية</div>
+  </div>
+  <div class="stat-card stat-card-treasury" style="animation-delay:0.25s">
+    <div class="icon icon-blue"><i class="fas fa-university"></i></div>
+    <div class="value">{{ bank_balance|floatformat:2 }}</div>
+    <div class="label">بنك</div>
   </div>
 </div>
 
@@ -68,9 +68,9 @@
     <div class="icon icon-purple"><i class="fas fa-receipt"></i></div>
     <div class="label" style="font-size:1rem;font-weight:800">فاتورة مبيعات</div>
   </a>
-  <a href="{% url 'stock_report' %}" class="stat-card" style="text-decoration:none;color:inherit">
-    <div class="icon icon-orange"><i class="fas fa-clipboard-list"></i></div>
-    <div class="label" style="font-size:1rem;font-weight:800">تقرير الأرصدة</div>
+  <a href="{% url 'return_add' %}" class="stat-card" style="text-decoration:none;color:inherit">
+    <div class="icon icon-orange"><i class="fas fa-undo"></i></div>
+    <div class="label" style="font-size:1rem;font-weight:800">مرتجع فاتورة</div>
   </a>
 </div>
 {% endblock %}

@@ -12,6 +12,7 @@ urlpatterns = [
     path('parties/', include('apps.parties.urls')),
     path('purchases/', include('apps.purchases.urls')),
     path('sales/', include('apps.sales.urls')),
+    path('returns/', include('apps.returns.urls')),
     path('treasury/', include('apps.treasury.urls')),
 ]
 

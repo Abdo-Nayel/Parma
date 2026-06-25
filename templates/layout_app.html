@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block body %}
+<button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="فتح القائمة">
+  <i class="fas fa-bars"></i>
+</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
 <div class="app-layout">
   {% include 'partials/sidebar.html' %}
   <main class="main-content">
@@ -20,4 +24,32 @@
     {% block page_content %}{% endblock %}
   </main>
 </div>
+<script>
+(function() {
+  const sidebar = document.getElementById('app-sidebar');
+  const toggle = document.getElementById('sidebar-toggle');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (!sidebar || !toggle) return;
+
+  function openSidebar() {
+    sidebar.classList.add('open');
+    overlay?.classList.add('visible');
+    document.body.classList.add('sidebar-open');
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay?.classList.remove('visible');
+    document.body.classList.remove('sidebar-open');
+  }
+  toggle.addEventListener('click', () => {
+    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+  });
+  overlay?.addEventListener('click', closeSidebar);
+  sidebar.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+      if (window.innerWidth <= 768) closeSidebar();
+    });
+  });
+})();
+</script>
 {% endblock %}

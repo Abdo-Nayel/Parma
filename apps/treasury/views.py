@@ -11,6 +11,8 @@ from apps.core.delete_checks import expense_blockers
 from apps.purchases.models import PurchaseInvoice, PurchasePayment
 from apps.sales.models import SalesInvoice, SalesPayment
 from apps.parties.models import SupplierPayment, CustomerPayment
+from apps.returns.models import ReturnDocument, ReturnPayment
+from apps.core.ledger_export import export_ledger_excel, export_ledger_pdf
 from .models import ExpenseCategory, Expense, Bank, CashBox
 
 
@@ -26,10 +28,15 @@ def _filter_by_date(qs, date_field, date_from, date_to):
     return qs
 
 
-def _build_ledger_entries(pay_out_qs, exp_qs, sup_pay_qs, pay_in_qs=None, cust_pay_qs=None):
+def _build_ledger_entries(
+    pay_out_qs, exp_qs, sup_pay_qs, pay_in_qs=None, cust_pay_qs=None,
+    ret_out_qs=None, ret_in_qs=None,
+):
     entries = []
     pay_in_qs = pay_in_qs or []
     cust_pay_qs = cust_pay_qs or []
+    ret_out_qs = ret_out_qs or []
+    ret_in_qs = ret_in_qs or []
 
     for pay in pay_out_qs:
         entries.append({
@@ -70,6 +77,22 @@ def _build_ledger_entries(pay_out_qs, exp_qs, sup_pay_qs, pay_in_qs=None, cust_p
             'desc': f'تحصيل عميل — {cp.customer.name}',
             'out': Decimal('0'),
             'in': cp.amount,
+        })
+    for rp in ret_out_qs:
+        entries.append({
+            'date': rp.document.date,
+            'ref': rp.document.return_number,
+            'desc': f'استرداد مرتجع — {rp.document.party_display}',
+            'out': rp.amount,
+            'in': Decimal('0'),
+        })
+    for rp in ret_in_qs:
+        entries.append({
+            'date': rp.document.date,
+            'ref': rp.document.return_number,
+            'desc': f'تحصيل مرتجع — {rp.document.party_display}',
+            'out': Decimal('0'),
+            'in': rp.amount,
         })
     entries.sort(key=lambda e: e['date'], reverse=True)
     total_in = sum(e['in'] for e in entries)
@@ -162,9 +185,37 @@ def cash_ledger(request):
     exp_qs = Expense.objects.filter(bank__isnull=True).select_related('category')
     exp_qs = _filter_by_date(exp_qs, 'date', date_from, date_to)
 
+    ret_out_qs = ReturnPayment.objects.filter(
+        document__status='posted',
+        document__kind=ReturnDocument.Kind.SALES,
+        payment_type='cash',
+    ).select_related('document')
+    ret_out_qs = _filter_by_date(ret_out_qs, 'document__date', date_from, date_to)
+
+    ret_in_qs = ReturnPayment.objects.filter(
+        document__status='posted',
+        document__kind=ReturnDocument.Kind.PURCHASE,
+        payment_type='cash',
+    ).select_related('document')
+    ret_in_qs = _filter_by_date(ret_in_qs, 'document__date', date_from, date_to)
+
     entries, total_in, total_out = _build_ledger_entries(
-        pay_out_qs, exp_qs, sup_pay_qs, pay_in_qs, cust_pay_qs,
+        pay_out_qs, exp_qs, sup_pay_qs, pay_in_qs, cust_pay_qs, ret_out_qs, ret_in_qs,
     )
+    net_balance = total_in - total_out
+
+    export_fmt = request.GET.get('export')
+    title = f'كشف الخزنة النقدية — {cash.name}'
+    if export_fmt == 'excel':
+        return export_ledger_excel(
+            entries, total_in, total_out, net_balance, cash.balance,
+            title, 'cash-ledger.xlsx',
+        )
+    if export_fmt == 'pdf':
+        return export_ledger_pdf(
+            entries, total_in, total_out, net_balance, cash.balance,
+            title, 'cash-ledger.pdf',
+        )
 
     return render(request, 'treasury/cash_ledger.html', {
         'page_title': f'كشف الخزنة النقدية — {cash.name}',
@@ -175,6 +226,7 @@ def cash_ledger(request):
         'date_to': date_to,
         'total_in': total_in,
         'total_out': total_out,
+        'net_balance': net_balance,
     })
 
 
@@ -215,8 +267,36 @@ def bank_ledger(request):
         exp_qs = Expense.objects.filter(bank=bank).select_related('category')
         exp_qs = _filter_by_date(exp_qs, 'date', date_from, date_to)
 
+        ret_out_qs = ReturnPayment.objects.filter(
+            document__status='posted',
+            document__kind=ReturnDocument.Kind.SALES,
+            payment_type='bank', bank=bank,
+        ).select_related('document')
+        ret_out_qs = _filter_by_date(ret_out_qs, 'document__date', date_from, date_to)
+
+        ret_in_qs = ReturnPayment.objects.filter(
+            document__status='posted',
+            document__kind=ReturnDocument.Kind.PURCHASE,
+            payment_type='bank', bank=bank,
+        ).select_related('document')
+        ret_in_qs = _filter_by_date(ret_in_qs, 'document__date', date_from, date_to)
+
         entries, total_in, total_out = _build_ledger_entries(
-            pay_out_qs, exp_qs, sup_pay_qs, pay_in_qs, cust_pay_qs,
+            pay_out_qs, exp_qs, sup_pay_qs, pay_in_qs, cust_pay_qs, ret_out_qs, ret_in_qs,
+        )
+
+    net_balance = total_in - total_out
+
+    export_fmt = request.GET.get('export')
+    if bank and export_fmt == 'excel':
+        return export_ledger_excel(
+            entries, total_in, total_out, net_balance, bank.balance,
+            f'كشف بنك — {bank.name}', 'bank-ledger.xlsx',
+        )
+    if bank and export_fmt == 'pdf':
+        return export_ledger_pdf(
+            entries, total_in, total_out, net_balance, bank.balance,
+            f'كشف بنك — {bank.name}', 'bank-ledger.pdf',
         )
 
     return render(request, 'treasury/bank_ledger.html', {
@@ -231,6 +311,7 @@ def bank_ledger(request):
         'selected_bank': bank_id or (str(bank.pk) if bank else ''),
         'total_in': total_in,
         'total_out': total_out,
+        'net_balance': net_balance,
     })
 
 
