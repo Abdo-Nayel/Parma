@@ -20,45 +20,62 @@
       <i class="fas fa-chevron-down nav-chevron"></i>
     </button>
     <div class="nav-group-items">
+      <span class="nav-section-label">الإعداد</span>
       <a href="{% url 'warehouse_list' %}" class="nav-link" data-path="/inventory/warehouses"><i class="fas fa-warehouse"></i> المخازن</a>
       <a href="{% url 'category_list' %}" class="nav-link" data-path="/inventory/categories"><i class="fas fa-layer-group"></i> الأصناف الرئيسية</a>
       <a href="{% url 'company_list' %}" class="nav-link" data-path="/inventory/companies"><i class="fas fa-industry"></i> الشركات المنتجة</a>
       <a href="{% url 'product_list' %}" class="nav-link" data-path="/inventory/products"><i class="fas fa-pills"></i> الأصناف الفرعية</a>
       <a href="{% url 'opening_stock' %}" class="nav-link" data-path="/inventory/opening-stock"><i class="fas fa-box-open"></i> رصيد افتتاحي</a>
+      <span class="nav-section-label">التقارير</span>
       <a href="{% url 'stock_report' %}" class="nav-link" data-path="/inventory/stock-report"><i class="fas fa-search"></i> استعلام مخزون</a>
       <a href="{% url 'expiry_report' %}" class="nav-link" data-path="/inventory/expiry-report"><i class="fas fa-calendar-times"></i> تقرير الصلاحيات</a>
       <a href="{% url 'stock_valuation' %}" class="nav-link" data-path="/inventory/stock-valuation"><i class="fas fa-coins"></i> تقييم المخزون</a>
     </div>
   </div>
 
-  <div class="nav-group" data-nav-group="parties">
+  <div class="nav-group" data-nav-group="suppliers">
     <button type="button" class="nav-group-toggle" aria-expanded="false">
-      <span class="nav-group-label"><i class="fas fa-handshake"></i> الأطراف</span>
+      <span class="nav-group-label"><i class="fas fa-truck"></i> الموردين والمشتريات</span>
       <i class="fas fa-chevron-down nav-chevron"></i>
     </button>
     <div class="nav-group-items">
+      <span class="nav-section-label">البيانات</span>
       <a href="{% url 'supplier_list' %}" class="nav-link" data-path="/parties/suppliers"><i class="fas fa-truck"></i> الموردين</a>
+      <span class="nav-section-label">الحركات</span>
+      <a href="{% url 'purchase_list' %}" class="nav-link" data-path="/purchases"><i class="fas fa-cart-shopping"></i> فواتير المشتريات</a>
+      <a href="{% url 'supplier_payment' %}" class="nav-link" data-path="/parties/suppliers/payment"><i class="fas fa-money-bill-wave"></i> سداد مورد</a>
+      <span class="nav-section-label">التقارير</span>
       <a href="{% url 'supplier_balances' %}" class="nav-link" data-path="/parties/suppliers/balances"><i class="fas fa-file-invoice-dollar"></i> أرصدة الموردين</a>
       <a href="{% url 'supplier_statement' %}" class="nav-link" data-path="/parties/suppliers/statement"><i class="fas fa-receipt"></i> كشف حساب مورد</a>
-      <a href="{% url 'supplier_payment' %}" class="nav-link" data-path="/parties/suppliers/payment"><i class="fas fa-money-bill-wave"></i> سداد مورد</a>
-      <a href="{% url 'customer_list' %}" class="nav-link" data-path="/parties/customers"><i class="fas fa-users"></i> العملاء</a>
-      <a href="{% url 'customer_balances' %}" class="nav-link" data-path="/parties/customers/balances"><i class="fas fa-file-invoice-dollar"></i> أرصدة العملاء</a>
-      <a href="{% url 'customer_statement' %}" class="nav-link" data-path="/parties/customers/statement"><i class="fas fa-receipt"></i> كشف حساب عميل</a>
-      <a href="{% url 'customer_payment' %}" class="nav-link" data-path="/parties/customers/payment"><i class="fas fa-hand-holding-usd"></i> تحصيل عميل</a>
     </div>
   </div>
 
-  <div class="nav-group" data-nav-group="operations">
+  <div class="nav-group" data-nav-group="customers">
     <button type="button" class="nav-group-toggle" aria-expanded="false">
-      <span class="nav-group-label"><i class="fas fa-briefcase"></i> العمليات</span>
+      <span class="nav-group-label"><i class="fas fa-users"></i> العملاء والمبيعات</span>
       <i class="fas fa-chevron-down nav-chevron"></i>
     </button>
     <div class="nav-group-items">
-      <a href="{% url 'purchase_list' %}" class="nav-link" data-path="/purchases"><i class="fas fa-cart-shopping"></i> المشتريات</a>
-      <a href="{% url 'sales_list' %}" class="nav-link" data-path="/sales"><i class="fas fa-cash-register"></i> المبيعات</a>
+      <span class="nav-section-label">البيانات</span>
+      <a href="{% url 'customer_list' %}" class="nav-link" data-path="/parties/customers"><i class="fas fa-users"></i> العملاء</a>
+      <span class="nav-section-label">الحركات</span>
+      <a href="{% url 'sales_list' %}" class="nav-link" data-path="/sales"><i class="fas fa-cash-register"></i> فواتير المبيعات</a>
       <a href="{% url 'return_list' %}" class="nav-link" data-path="/returns"><i class="fas fa-undo"></i> مرتجعات الفواتير</a>
-      <a href="{% url 'sales_items_report' %}" class="nav-link" data-path="/sales/reports/items"><i class="fas fa-list-alt"></i> تقرير مبيعات بالأصناف</a>
+      <a href="{% url 'customer_payment' %}" class="nav-link" data-path="/parties/customers/payment"><i class="fas fa-hand-holding-usd"></i> تحصيل عميل</a>
+      <span class="nav-section-label">التقارير</span>
+      <a href="{% url 'customer_balances' %}" class="nav-link" data-path="/parties/customers/balances"><i class="fas fa-file-invoice-dollar"></i> أرصدة العملاء</a>
+      <a href="{% url 'customer_statement' %}" class="nav-link" data-path="/parties/customers/statement"><i class="fas fa-receipt"></i> كشف حساب عميل</a>
+      <a href="{% url 'sales_items_report' %}" class="nav-link" data-path="/sales/reports/items"><i class="fas fa-list-alt"></i> مبيعات بالأصناف</a>
       <a href="{% url 'sales_profit_report' %}" class="nav-link" data-path="/sales/reports/profit"><i class="fas fa-chart-line"></i> تقرير الأرباح</a>
+    </div>
+  </div>
+
+  <div class="nav-group" data-nav-group="treasury">
+    <button type="button" class="nav-group-toggle" aria-expanded="false">
+      <span class="nav-group-label"><i class="fas fa-landmark"></i> الخزينة</span>
+      <i class="fas fa-chevron-down nav-chevron"></i>
+    </button>
+    <div class="nav-group-items">
       <a href="{% url 'expense_list' %}" class="nav-link" data-path="/treasury/expenses"><i class="fas fa-money-bill-wave"></i> المصروفات</a>
       <a href="{% url 'cash_ledger' %}" class="nav-link" data-path="/treasury/cash-ledger"><i class="fas fa-cash-register"></i> كشف الخزنة النقدية</a>
       <a href="{% url 'bank_ledger' %}" class="nav-link" data-path="/treasury/bank-ledger"><i class="fas fa-university"></i> كشف البنوك</a>

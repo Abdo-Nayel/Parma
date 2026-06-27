@@ -66,7 +66,7 @@ def _build_ledger_entries(
         entries.append({
             'date': pay.invoice.date,
             'ref': pay.invoice.invoice_number,
-            'desc': f'تحصيل مبيعات — {pay.invoice.buyer_display}',
+            'desc': f'تحصيل مبيعات — {pay.invoice.ledger_label}',
             'out': Decimal('0'),
             'in': pay.amount,
         })

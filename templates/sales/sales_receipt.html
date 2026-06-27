@@ -139,7 +139,7 @@
   <div class="meta-row"><span>فاتورة #{{ obj.invoice_number }}</span><span>{{ obj.date }}</span></div>
   <div class="meta-row"><span>{{ obj.get_payment_type_display }}</span><span>{{ obj.currency }}</span></div>
   {% if receipt.show_customer %}
-  <div class="meta-row"><span>العميل</span><span>{{ obj.buyer_display }}</span></div>
+  <div class="meta-row"><span>العميل</span><span>{{ obj.receipt_buyer_display }}</span></div>
   {% endif %}
   {% if receipt.show_cashier and obj.created_by %}
   <div class="meta-row"><span>الكاشير</span><span>{{ obj.created_by.get_full_name|default:obj.created_by.username }}</span></div>

@@ -1,7 +1,7 @@
 {% extends 'layout_app.html' %}
 {% block page_content %}
 <div class="panel"><div class="panel-header"><h3>{{ page_title }}</h3></div><div class="panel-body">
-<form method="post">{% csrf_token %}
+<form method="post" id="user-form">{% csrf_token %}
 <div class="form-grid">
   <div class="form-group"><label>اسم المستخدم *</label><input name="username" class="form-control" required {% if obj %}readonly{% endif %} value="{{ obj.username|default:'' }}"></div>
   <div class="form-group"><label>كلمة المرور {% if obj %}(اتركها فارغة للإبقاء){% else %}*{% endif %}</label><input name="password" type="password" class="form-control" {% if not obj %}required{% endif %}></div>
@@ -15,20 +15,70 @@
 </div>
 
 <h4 style="margin:1.5rem 0 0.75rem;font-weight:800"><i class="fas fa-shield-alt"></i> صلاحيات الشاشات</h4>
-<div class="permissions-table-wrap">
-<table class="data-table permissions-table">
-  <thead><tr><th>الشاشة</th><th>عرض</th><th>إضافة</th><th>تعديل</th><th>حذف</th></tr></thead>
-  <tbody>{% for row in module_rows %}<tr>
-    <td>{{ row.label }}</td>
-    <td><input type="checkbox" name="view_{{ row.module }}" {% if row.can_view %}checked{% endif %}></td>
-    <td><input type="checkbox" name="add_{{ row.module }}" {% if row.can_add %}checked{% endif %}></td>
-    <td><input type="checkbox" name="edit_{{ row.module }}" {% if row.can_edit %}checked{% endif %}></td>
-    <td><input type="checkbox" name="delete_{{ row.module }}" {% if row.can_delete %}checked{% endif %}></td>
-  </tr>{% endfor %}</tbody>
-</table>
+<div class="perm-toolbar">
+  <button type="button" class="btn btn-outline btn-sm" onclick="selectAllPerm('view', true)">تحديد كل عرض</button>
+  <button type="button" class="btn btn-outline btn-sm" onclick="selectAllPerm('add', true)">تحديد كل إضافة</button>
+  <button type="button" class="btn btn-outline btn-sm" onclick="selectAllPerm('edit', true)">تحديد كل تعديل</button>
+  <button type="button" class="btn btn-outline btn-sm" onclick="selectAllPerm('delete', true)">تحديد كل حذف</button>
+  <button type="button" class="btn btn-outline btn-sm" onclick="selectAllPerm('all', false)">إلغاء الكل</button>
+</div>
+
+{% for group in permission_groups %}
+<details class="perm-group" open>
+  <summary>
+    <span><i class="fas {{ group.icon }}"></i> {{ group.label }}</span>
+    <span class="perm-group-actions">
+      <button type="button" class="btn btn-outline btn-sm" onclick="selectGroup('{{ group.id }}', true, event)">تحديد القسم</button>
+      <button type="button" class="btn btn-outline btn-sm" onclick="selectGroup('{{ group.id }}', false, event)">إلغاء القسم</button>
+    </span>
+  </summary>
+  <div class="permissions-table-wrap">
+    <table class="data-table permissions-table">
+      <thead><tr><th>الشاشة</th><th>عرض</th><th>إضافة</th><th>تعديل</th><th>حذف</th></tr></thead>
+      <tbody>
+        {% for row in group.rows %}
+        <tr data-group="{{ group.id }}">
+          <td>{{ row.label }}</td>
+          <td><input type="checkbox" class="perm-view" name="view_{{ row.module }}" {% if row.can_view %}checked{% endif %}></td>
+          <td><input type="checkbox" class="perm-add" name="add_{{ row.module }}" {% if row.can_add %}checked{% endif %}></td>
+          <td><input type="checkbox" class="perm-edit" name="edit_{{ row.module }}" {% if row.can_edit %}checked{% endif %}></td>
+          <td><input type="checkbox" class="perm-delete" name="delete_{{ row.module }}" {% if row.can_delete %}checked{% endif %}></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</details>
+{% endfor %}
+
+<h4 style="margin:1.75rem 0 0.75rem;font-weight:800"><i class="fas fa-th-large"></i> اختصارات لوحة التحكم</h4>
+<p style="color:#64748b;font-size:0.9rem;margin-bottom:0.75rem">اختر الاختصارات التي تظهر للمستخدم في الصفحة الرئيسية.</p>
+<div class="shortcut-picks">
+  {% for sc in dashboard_shortcut_options %}
+  <label class="shortcut-pick">
+    <input type="checkbox" name="shortcut_{{ sc.key }}" {% if sc.key in selected_shortcuts %}checked{% endif %}>
+    <span><i class="fas {{ sc.icon }}"></i> {{ sc.label }}</span>
+  </label>
+  {% endfor %}
 </div>
 
 <button class="btn btn-primary" style="margin-top:1rem"><i class="fas fa-save"></i> حفظ</button>
 <a href="{% url 'user_list' %}" class="btn btn-outline">رجوع</a>
 </form></div></div>
+
+<script>
+function selectAllPerm(kind, checked) {
+  const map = {view: '.perm-view', add: '.perm-add', edit: '.perm-edit', delete: '.perm-delete'};
+  if (kind === 'all') {
+    document.querySelectorAll('.permissions-table input[type=checkbox]').forEach(cb => cb.checked = checked);
+    return;
+  }
+  document.querySelectorAll(map[kind]).forEach(cb => cb.checked = checked);
+}
+function selectGroup(groupId, checked, ev) {
+  ev.preventDefault();
+  ev.stopPropagation();
+  document.querySelectorAll(`tr[data-group="${groupId}"] input[type=checkbox]`).forEach(cb => cb.checked = checked);
+}
+</script>
 {% endblock %}

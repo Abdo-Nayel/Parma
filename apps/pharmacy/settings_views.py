@@ -10,6 +10,8 @@ from apps.core.delete_checks import (
     branch_blockers, bank_blockers, user_blockers,
 )
 from apps.core.permissions import require_module, user_can
+from apps.core.permission_groups import MODULE_GROUPS
+from apps.core.dashboard_shortcuts import DASHBOARD_SHORTCUTS, DEFAULT_DASHBOARD_SHORTCUTS, SHORTCUTS_BY_KEY
 from apps.core.views import delete_confirm
 from apps.core.pagination import paginate_queryset
 from apps.pharmacy.models import PharmacyProfile, Branch, BarcodeLabelSettings, ReceiptSettings
@@ -195,17 +197,26 @@ def user_form(request, pk=None):
     obj = get_object_or_404(User, pk=pk) if pk else None
     branches = Branch.objects.filter(is_active=True)
     existing_access = {a.module: a for a in obj.module_access.all()} if obj else {}
-    module_rows = []
-    for mod, label in ALL_MODULES:
+
+    def _access_row(mod, label):
         acc = existing_access.get(mod)
-        module_rows.append({
+        return {
             'module': mod,
             'label': label,
             'can_view': acc.can_view if acc else (not obj),
             'can_add': acc.can_add if acc else False,
             'can_edit': acc.can_edit if acc else False,
             'can_delete': acc.can_delete if acc else False,
+        }
+
+    permission_groups = []
+    for group in MODULE_GROUPS:
+        permission_groups.append({
+            **group,
+            'rows': [_access_row(mod, label) for mod, label in group['modules']],
         })
+
+    selected_shortcuts = set(obj.dashboard_shortcuts if obj and obj.dashboard_shortcuts else DEFAULT_DASHBOARD_SHORTCUTS)
 
     if request.method == 'POST':
         username = request.POST['username'].strip()
@@ -250,13 +261,22 @@ def user_form(request, pk=None):
                     'can_delete': request.POST.get(f'delete_{module}') == 'on',
                 },
             )
+
+        shortcuts = [
+            key for key in SHORTCUTS_BY_KEY
+            if request.POST.get(f'shortcut_{key}') == 'on'
+        ]
+        user.dashboard_shortcuts = shortcuts
+        user.save(update_fields=['dashboard_shortcuts'])
         return redirect('user_list')
 
     return render(request, 'settings/user_form.html', {
         'page_title': 'تعديل مستخدم' if obj else 'إضافة مستخدم',
         'obj': obj,
         'branches': branches,
-        'module_rows': module_rows,
+        'permission_groups': permission_groups,
+        'dashboard_shortcut_options': DASHBOARD_SHORTCUTS,
+        'selected_shortcuts': selected_shortcuts,
         'roles': User.Role.choices,
     })
 

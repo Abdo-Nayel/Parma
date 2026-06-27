@@ -4,7 +4,7 @@
   <div class="panel-header"><h3><i class="fas fa-search"></i> استعلام مخزون</h3></div>
   <div class="panel-body">
     <form class="search-bar" method="get">
-      <input name="q" class="form-control" placeholder="سكان / بحث بالباركود أو الكود أو الاسم..." value="{{ q }}" autofocus>
+      <input name="q" class="form-control scan-input" placeholder="سكان / بحث بالباركود أو الكود أو الاسم..." value="{{ q }}" autofocus>
       <select name="category" class="form-control">
         <option value="">كل المجموعات الرئيسية</option>
         {% for c in categories %}<option value="{{ c.pk }}" {% if selected_category == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.code }} — {{ c.name }}</option>{% endfor %}

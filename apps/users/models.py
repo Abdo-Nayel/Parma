@@ -20,6 +20,11 @@ class User(AbstractUser):
         verbose_name='الفرع',
         related_name='users',
     )
+    dashboard_shortcuts = models.JSONField(
+        'اختصارات لوحة التحكم',
+        blank=True,
+        default=list,
+    )
 
     class Meta:
         verbose_name = 'مستخدم'

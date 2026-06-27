@@ -8,6 +8,8 @@ from django.db.models import Sum, F
 from apps.inventory.models import Product
 from apps.sales.models import SalesInvoice
 from apps.parties.models import Customer, Supplier
+from apps.core.dashboard_shortcuts import DASHBOARD_SHORTCUTS, DEFAULT_DASHBOARD_SHORTCUTS, SHORTCUTS_BY_KEY
+from apps.core.permissions import user_can
 from apps.treasury.models import Bank, CashBox
 
 
@@ -32,6 +34,15 @@ def dashboard(request):
         status='posted'
     ).select_related('customer').order_by('-date', '-id')[:5]
 
+    shortcut_keys = request.user.dashboard_shortcuts or DEFAULT_DASHBOARD_SHORTCUTS
+    dashboard_shortcuts = []
+    for key in shortcut_keys:
+        item = SHORTCUTS_BY_KEY.get(key)
+        if not item:
+            continue
+        if request.user.is_superuser or user_can(request.user, item['module'], item['perm']):
+            dashboard_shortcuts.append(item)
+
     context = {
         'page_title': 'لوحة التحكم',
         'low_stock': low_stock,
@@ -40,5 +51,6 @@ def dashboard(request):
         'cash_balance': cash_balance,
         'bank_balance': bank_balance,
         'recent_sales': recent_sales,
+        'dashboard_shortcuts': dashboard_shortcuts,
     }
     return render(request, 'dashboard/home.html', context)

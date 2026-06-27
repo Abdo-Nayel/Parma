@@ -21,7 +21,7 @@ sudo systemctl stop pweb 2>/dev/null || true
 
 echo "==> PostgreSQL"
 sudo apt-get update -qq
-sudo apt-get install -y postgresql postgresql-contrib
+sudo apt-get install -y postgresql postgresql-contrib fonts-noto-arabic
 sudo systemctl enable postgresql
 sudo systemctl start postgresql
 

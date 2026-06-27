@@ -43,7 +43,7 @@
         <tr>
           <td>{{ inv.invoice_number }}</td>
           <td>{{ inv.date }}</td>
-          <td>{{ inv.customer|default:"نقدي" }}</td>
+          <td>{{ inv.buyer_display }}</td>
           <td>{{ inv.grand_total }}</td>
           <td><span class="badge badge-success">مرحّلة</span></td>
         </tr>
@@ -55,22 +55,14 @@
   </div>
 </div>
 
+{% if dashboard_shortcuts %}
 <div class="stats-grid" style="margin-top:1.5rem">
-  <a href="{% url 'product_add' %}" class="stat-card" style="text-decoration:none;color:inherit;cursor:pointer">
-    <div class="icon icon-blue"><i class="fas fa-plus"></i></div>
-    <div class="label" style="font-size:1rem;font-weight:800">إضافة دواء جديد</div>
+  {% for sc in dashboard_shortcuts %}
+  <a href="{% url sc.url_name %}" class="stat-card" style="text-decoration:none;color:inherit;cursor:pointer">
+    <div class="icon {{ sc.icon_class }}"><i class="fas {{ sc.icon }}"></i></div>
+    <div class="label" style="font-size:1rem;font-weight:800">{{ sc.label }}</div>
   </a>
-  <a href="{% url 'purchase_add' %}" class="stat-card" style="text-decoration:none;color:inherit">
-    <div class="icon icon-green"><i class="fas fa-cart-plus"></i></div>
-    <div class="label" style="font-size:1rem;font-weight:800">فاتورة مشتريات</div>
-  </a>
-  <a href="{% url 'sales_add' %}" class="stat-card" style="text-decoration:none;color:inherit">
-    <div class="icon icon-purple"><i class="fas fa-receipt"></i></div>
-    <div class="label" style="font-size:1rem;font-weight:800">فاتورة مبيعات</div>
-  </a>
-  <a href="{% url 'return_add' %}" class="stat-card" style="text-decoration:none;color:inherit">
-    <div class="icon icon-orange"><i class="fas fa-undo"></i></div>
-    <div class="label" style="font-size:1rem;font-weight:800">مرتجع فاتورة</div>
-  </a>
+  {% endfor %}
 </div>
+{% endif %}
 {% endblock %}

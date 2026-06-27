@@ -49,8 +49,20 @@ class SalesInvoice(models.Model):
 
     @property
     def buyer_display(self):
+        if self.payment_type == self.PaymentType.CREDIT and self.customer_id:
+            return self.customer.name
+        return 'نقدي'
+
+    @property
+    def ledger_label(self):
+        if self.payment_type == self.PaymentType.CREDIT and self.customer_id:
+            return self.customer.name
+        return 'نقدي'
+
+    @property
+    def receipt_buyer_display(self):
         if self.customer_id:
-            return f'{self.customer.code} — {self.customer.name}'
+            return self.customer.name
         if self.walk_in_name:
             return self.walk_in_name + (f' ({self.walk_in_phone})' if self.walk_in_phone else '')
         return 'نقدي'
