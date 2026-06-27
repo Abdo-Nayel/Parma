@@ -38,7 +38,7 @@
       <tbody>
         {% for m in data.movements %}
         <tr>
-          <td>{{ m.date }}</td><td>{{ m.ref }}</td><td>{{ m.desc }}</td>
+          <td>{{ m.date|date:"Y-m-d" }}</td><td>{{ m.ref }}</td><td>{{ m.desc }}</td>
           <td>{% if m.in %}{{ m.in }}{% else %}—{% endif %}</td>
           <td>{% if m.out %}{{ m.out }}{% else %}—{% endif %}</td>
         </tr>

@@ -10,8 +10,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
-  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
-  <link rel="icon" href="{% static 'img/LyomasTech_Logo2.png' %}">
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}?v={{ static_version }}">
+  <link rel="icon" href="{% static 'img/LyomasTech_Logo2.png' %}?v={{ static_version }}">
   {% block extra_css %}{% endblock %}
 </head>
 <body>

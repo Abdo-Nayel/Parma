@@ -119,7 +119,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
 ]
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ar'
 TIME_ZONE = 'Africa/Cairo'
 USE_I18N = True
 USE_L10N = True
@@ -128,6 +128,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+_theme_css = BASE_DIR / 'static' / 'css' / 'theme.css'
+STATIC_VERSION = os.environ.get(
+    'STATIC_VERSION',
+    str(int(_theme_css.stat().st_mtime)) if _theme_css.exists() else '1',
+)
 if DEBUG:
     WHITENOISE_USE_FINDERS = True
     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
